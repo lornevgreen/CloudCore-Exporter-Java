@@ -283,8 +283,8 @@ public abstract class IFileSystem {
     public void RemoveCoins(ArrayList<CloudCoin> coins, String folder, String extension) {
         for (CloudCoin coin : coins) {
             try {
-                System.out.println("deleting" + folder + coin.currentFilename + extension);
-                Files.deleteIfExists(Paths.get(folder + coin.currentFilename + extension));
+                System.out.println("deleting" + folder + coin.currentFilename + coin.currentExtension);
+                Files.deleteIfExists(Paths.get(folder + coin.currentFilename + coin.currentExtension));
             } catch (IOException e) {
                 System.out.println(e.getLocalizedMessage());
                 e.printStackTrace();
@@ -500,7 +500,7 @@ public abstract class IFileSystem {
     }//end write JPEG
 
 
-    public String bytesToHexString(byte[] data) {
+    public String bytesToHexStringOld(byte[] data) {
         int length = data.length;
         char[] hex = new char[length * 2];
         int num1 = 0;
@@ -511,6 +511,14 @@ public abstract class IFileSystem {
         }
         return new String(hex);
     }//End NewConverted//
+
+    public String bytesToHexString(byte[] data) {
+        final String HexChart = "0123456789ABCDEF";
+        final StringBuilder hex = new StringBuilder(data.length * 2);
+        for (byte b : data)
+            hex.append(HexChart.charAt((b & 0xF0) >> 4)).append(HexChart.charAt((b & 0x0F)));
+        return hex.toString();
+    }
 
     private char GetHexValue(int i) {
         if (i < 10) {
@@ -574,25 +582,23 @@ public abstract class IFileSystem {
     }//End Write To
 
     public CloudCoin parseJpeg(String wholeString) {
-
         CloudCoin cc = new CloudCoin();
         int startAn = 40;
         for (int i = 0; i < 25; i++) {
-            cc.an.add(wholeString.substring(startAn, 32));
-            //ccan.set(i, wholeString.substring(startAn, 32));
+            cc.an.add(wholeString.substring(startAn).substring(0, 32));
+            //cc.an.set(i, wholeString.substring(startAn, 32));
             // System.out.println(i +": " + cc.an[i]);
             startAn += 32;
         }
-
 
         cc.aoid = null;
         // wholeString.substring( 840, 895 );
         //cc.hp = 25;
         // Integer.parseInt(wholeString.substring( 896, 896 ), 16);
-        cc.ed = wholeString.substring(898, 4);
+        cc.ed = wholeString.substring(898).substring(0, 4);
 
-        cc.nn = Integer.valueOf(wholeString.substring(902, 2), 16);
-        cc.setSn(Integer.valueOf(wholeString.substring(904, 6), 16));
+        cc.nn = Integer.valueOf(wholeString.substring(902).substring(0, 2), 16);
+        cc.setSn(Integer.valueOf(wholeString.substring(904).substring(0, 6), 16));
         cc.pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
         //  System.out.println("parseJpeg cc.fileName " + cc.fileName);
         return cc;

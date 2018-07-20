@@ -96,23 +96,23 @@ public class Exporter {
 
         if (onesTotalCount > 0) {
             System.out.println("How many 1s do you want to export?");
-            exp_1 = Math.max(Utils.tryParseInteger(reader.next()), onesTotalCount);
+            exp_1 = Math.min(Utils.tryParseInteger(reader.next()), onesTotalCount);
         }
         if (fivesTotalCount > 0) {
             System.out.println("How many 5s do you want to export?");
-            exp_5 = Math.max(Utils.tryParseInteger(reader.next()), fivesTotalCount);
+            exp_5 = Math.min(Utils.tryParseInteger(reader.next()), fivesTotalCount);
         }
         if ((qtrTotalCount > 0)) {
             System.out.println("How many 25s do you want to export?");
-            exp_25 = Math.max(Utils.tryParseInteger(reader.next()), qtrTotalCount);
+            exp_25 = Math.min(Utils.tryParseInteger(reader.next()), qtrTotalCount);
         }
         if (hundredsTotalCount > 0) {
             System.out.println("How many 100s do you want to export?");
-            exp_100 = Math.max(Utils.tryParseInteger(reader.next()), hundredsTotalCount);
+            exp_100 = Math.min(Utils.tryParseInteger(reader.next()), hundredsTotalCount);
         }
         if (twoFiftiesTotalCount > 0) {
             System.out.println("How many 250s do you want to export?");
-            exp_250 = Math.max(Utils.tryParseInteger(reader.next()), twoFiftiesTotalCount);
+            exp_250 = Math.min(Utils.tryParseInteger(reader.next()), twoFiftiesTotalCount);
         }
 
         System.out.println("What tag will you add to the file name?");
@@ -129,21 +129,23 @@ public class Exporter {
         ArrayList<CloudCoin> twoFiftiesToExport = new ArrayList<>();
         System.out.println("total coins: " + totalCoins.size());
         for (int i = 0, totalCoinsSize = totalCoins.size(); i < totalCoinsSize; i++) {
-            if (totalCoins.get(i).denomination == 1) {
-                if (exp_1-- > 0)
-                    onesToExport.add(totalCoins.get(i));
-            } else if (totalCoins.get(i).denomination == 5) {
-                if (exp_5-- > 0)
-                    fivesToExport.add(totalCoins.get(i));
-            } else if (totalCoins.get(i).denomination == 25) {
-                if (exp_25-- > 0)
-                    qtrToExport.add(totalCoins.get(i));
-            } else if (totalCoins.get(i).denomination == 100) {
-                if (exp_100-- > 0)
-                    hundredsToExport.add(totalCoins.get(i));
-            } else if (totalCoins.get(i).denomination == 250) {
-                if (exp_250-- > 0)
-                    twoFiftiesToExport.add(totalCoins.get(i));
+            System.out.println(exp_1 + "," + exp_5 + "," + exp_25 + "," + exp_100 + "," + exp_250);
+            CloudCoin coin = totalCoins.get(i);
+            if (coin.denomination == 1) {
+                if (exp_1-- > 0) onesToExport.add(coin);
+                else exp_1 = 0;
+            } else if (coin.denomination == 5) {
+                if (exp_5-- > 0) fivesToExport.add(coin);
+                else exp_5 = 0;
+            } else if (coin.denomination == 25) {
+                if (exp_25-- > 0) qtrToExport.add(coin);
+                else exp_25 = 0;
+            } else if (coin.denomination == 100) {
+                if (exp_100-- > 0) hundredsToExport.add(coin);
+                else exp_100 = 0;
+            } else if (coin.denomination == 250) {
+                if (exp_250-- > 0) twoFiftiesToExport.add(coin);
+                else exp_250 = 0;
             }
         }
 

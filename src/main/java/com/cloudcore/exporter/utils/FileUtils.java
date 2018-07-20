@@ -69,8 +69,10 @@ public class FileUtils {
                 String aoidKey = (childJSONObject.has("aoid"))? "aoid" : "aoidText";
                 ArrayList<String> aoid = toStringArrayList(childJSONObject.getJSONArray(aoidKey));
 
-                String currentFilename = fileName.substring(fileName.lastIndexOf(File.separatorChar) + 1);
-                cloudCoins.add(new CloudCoin(currentFilename, nn, sn, ans, ed, pown, aoid));
+                String extension = fileName.substring(fileName.lastIndexOf('.'));
+                String currentFilename = fileName.substring(fileName.lastIndexOf(File.separatorChar) + 1,
+                        fileName.length() - extension.length());
+                cloudCoins.add(new CloudCoin(currentFilename, extension, nn, sn, ans, ed, pown, aoid));
             }
         } catch (JSONException e){
             System.out.println("JSON File " + fileName + " was not imported. " + e.getLocalizedMessage());

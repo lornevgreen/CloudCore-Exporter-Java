@@ -34,6 +34,7 @@ public class CloudCoin {
     public transient String edHex;// Months from zero date that the coin will expire.
 
     public transient String currentFilename;
+    public transient String currentExtension;
 
     public transient int denomination;
 
@@ -57,8 +58,9 @@ public class CloudCoin {
         this.an = new ArrayList<>(Arrays.asList(ans));
     }
 
-    public CloudCoin(String currentFilename, int nn, int sn, ArrayList<String> an, String ed, String pown, ArrayList<String> aoid) {
+    public CloudCoin(String currentFilename, String currentExtension, int nn, int sn, ArrayList<String> an, String ed, String pown, ArrayList<String> aoid) {
         this.currentFilename = currentFilename;
+        this.currentExtension = currentExtension;
         this.nn = nn;
         this.sn = sn;
         this.an = an;
@@ -67,11 +69,19 @@ public class CloudCoin {
         this.aoid = aoid;
 
         denomination = getDenomination();
+        System.out.println(currentFilename +","+ currentExtension);
     }
 
     @Override
     public String toString() {
-        return "cloudcoin: (nn:" + nn + ", sn:" + sn + ", ed:" + ed + ", aoid:" + aoid.toString() + ", an:" + an.toString() + ",\n pan:" + Arrays.toString(pan);
+        StringBuilder builder = new StringBuilder();
+        builder.append("cloudcoin: (nn:").append(nn).append(", sn:").append(sn);
+        if (null != ed) builder.append(", ed:").append(ed);
+        if (null != aoid) builder.append(", aoid:").append(aoid.toString());
+        if (null != an) builder.append(", an:").append(an.toString());
+        if (null != pan) builder.append(",\n pan:").append(Arrays.toString(pan));
+
+        return builder.toString();
     }
 
     public static CloudCoin FromCSV(String csvLine) {

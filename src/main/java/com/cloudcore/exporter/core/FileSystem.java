@@ -1,9 +1,16 @@
 package com.cloudcore.exporter.core;
 
-import java.io.File;
+import com.cloudcore.exporter.utils.Utils;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 public class FileSystem extends IFileSystem {
 
@@ -11,20 +18,9 @@ public class FileSystem extends IFileSystem {
         this.RootPath = RootPath;
         ImportFolder = RootPath + File.separator + Config.TAG_IMPORT + File.separator;
         ExportFolder = RootPath + File.separator + Config.TAG_EXPORT + File.separator;
-        ImportedFolder = RootPath + File.separator + Config.TAG_IMPORTED + File.separator;
         TemplateFolder = RootPath + File.separator + Config.TAG_TEMPLATES + File.separator;
-        LanguageFolder = RootPath + File.separator + Config.TAG_LANGUAGE + File.separator;
-        CounterfeitFolder = RootPath + File.separator + Config.TAG_COUNTERFEIT + File.separator;
-        PartialFolder = RootPath + File.separator + Config.TAG_PARTIAL + File.separator;
         FrackedFolder = RootPath + File.separator + Config.TAG_FRACKED + File.separator;
-        DetectedFolder = RootPath + File.separator + Config.TAG_DETECTED + File.separator;
-        SuspectFolderOld = RootPath + File.separator + Config.TAG_SUSPECT_OLD + File.separator;
-        TrashFolder = RootPath + File.separator + Config.TAG_TRASH + File.separator;
         BankFolder = RootPath + File.separator + Config.TAG_BANK + File.separator;
-        SuspectFolder = RootPath + File.separator + Config.TAG_SUSPECT + File.separator;
-        LostFolder = RootPath + File.separator + Config.TAG_LOST + File.separator;
-        RequestsFolder = RootPath + File.separator + Config.TAG_REQUESTS + File.separator;
-        DangerousFolder = RootPath + File.separator + Config.TAG_DANGEROUS + File.separator;
         LogsFolder = RootPath + File.separator + Config.TAG_LOGS + File.separator;
         QRFolder = ImportFolder + Config.TAG_QR;
         BarCodeFolder = ImportFolder + Config.TAG_BARCODE;
@@ -38,26 +34,17 @@ public class FileSystem extends IFileSystem {
 
         try {
             Files.createDirectories(Paths.get(RootPath));
+
             Files.createDirectories(Paths.get(ImportFolder));
             Files.createDirectories(Paths.get(ExportFolder));
             Files.createDirectories(Paths.get(BankFolder));
-            Files.createDirectories(Paths.get(ImportedFolder));
-            Files.createDirectories(Paths.get(LostFolder));
-            Files.createDirectories(Paths.get(TrashFolder));
-            Files.createDirectories(Paths.get(SuspectFolderOld));
-            Files.createDirectories(Paths.get(DetectedFolder));
             Files.createDirectories(Paths.get(FrackedFolder));
             Files.createDirectories(Paths.get(TemplateFolder));
-            Files.createDirectories(Paths.get(PartialFolder));
-            Files.createDirectories(Paths.get(CounterfeitFolder));
-            Files.createDirectories(Paths.get(LanguageFolder));
-            Files.createDirectories(Paths.get(SuspectFolder));
-            Files.createDirectories(Paths.get(RequestsFolder));
-            Files.createDirectories(Paths.get(DangerousFolder));
-            Files.createDirectories(Paths.get(LogsFolder));
             Files.createDirectories(Paths.get(QRFolder));
             Files.createDirectories(Paths.get(BarCodeFolder));
             Files.createDirectories(Paths.get(CSVFolder));
+
+            Files.createDirectories(Paths.get(LogsFolder));
         } catch (Exception e) {
             System.out.println("FS#CD: " + e.getLocalizedMessage());
             e.printStackTrace();

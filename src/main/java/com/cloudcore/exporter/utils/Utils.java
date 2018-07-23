@@ -69,6 +69,10 @@ public class Utils {
         return builder.toString();
     }
 
+    public static String padString(String string, int length, char padding) {
+        return String.format("%" + length + "s", string).replace(' ', padding);
+    }
+
 
     public static int tryParseInteger(String string) {
         try {
@@ -77,5 +81,13 @@ public class Utils {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public static int[] combine(int[] a, int[] b){
+        int length = a.length + b.length;
+        int[] array = new int[length];
+        System.arraycopy(a, 0, array, 0, a.length);
+        System.arraycopy(b, 0, array, a.length, b.length);
+        return array;
     }
 }

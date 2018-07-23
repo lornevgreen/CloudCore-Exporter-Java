@@ -173,8 +173,8 @@ public class Exporter {
                     updateLog("CloudCoin exported as Jpeg to " + OutputFile);
             }
 
-            fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-            fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
+            //fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
+            //fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
         }
 
         // Export Coins as Stack

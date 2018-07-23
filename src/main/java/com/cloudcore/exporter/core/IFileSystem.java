@@ -17,26 +17,17 @@ public abstract class IFileSystem {
     public enum FileMoveOptions {Replace, Rename}
 
     public String RootPath;
+
     public String ImportFolder;
     public String ExportFolder;
     public String BankFolder;
-    public String ImportedFolder;
-    public String LostFolder;
-    public String TrashFolder;
-    public String SuspectFolderOld;
-    public String DetectedFolder;
     public String FrackedFolder;
     public String TemplateFolder;
-    public String PartialFolder;
-    public String CounterfeitFolder;
-    public String LanguageFolder;
-    public String SuspectFolder;
-    public String RequestsFolder;
-    public String DangerousFolder;
-    public String LogsFolder;
     public String QRFolder;
     public String BarCodeFolder;
     public String CSVFolder;
+
+    public String LogsFolder;
 
     //public abstract IFileSystem(String path);
 
@@ -111,6 +102,7 @@ public abstract class IFileSystem {
                     case "jpg":
                     case "jpeg":
                         CloudCoin coin = importJPEG(fileName);
+                        System.out.println("jpeg cloudcoin: " + coin.toString());
                         folderCoins.add(coin);
                         break;
                     case "csv":
@@ -220,7 +212,7 @@ public abstract class IFileSystem {
             // System.out.println("From FileUtils returnCC.fileName " + tempCoin.fileName);
             /*end import from jpeg file */
             //   System.out.println("Loaded coin filename: " + tempCoin.fileName);
-            writeTo(SuspectFolderOld, tempCoin);
+            writeTo(BankFolder, tempCoin);
             return tempCoin;
         } catch (IOException e) {
             System.out.println("IO Exception:" + fileName + e);
@@ -420,17 +412,7 @@ public abstract class IFileSystem {
         cc.CalcExpirationDate();
         cloudCoinStr += cc.edHex; // 01;//Expiration date Sep 2016 (one month after zero month)
         cloudCoinStr += "01";//  cc.nn;//network number
-        String hexSN = cc.getSn().ToString("X6");
-        String fullHexSN = "";
-        switch (hexSN.length())
-        {
-            case 1: fullHexSN = ("00000" + hexSN); break;
-            case 2: fullHexSN = ("0000" + hexSN); break;
-            case 3: fullHexSN = ("000" + hexSN); break;
-            case 4: fullHexSN = ("00" + hexSN); break;
-            case 5: fullHexSN = ("0" + hexSN); break;
-            case 6: fullHexSN = hexSN; break;
-        }
+        String fullHexSN = Utils.padString(Integer.toHexString(cloudCoin.getSn()).toUpperCase(), 6, '0');
         cloudCoinStr = (cloudCoinStr + fullHexSN);
         // BYTES THAT WILL GO FROM 04 to 454 (Inclusive)//
         byte[] ccArray = this.hexStringToByteArray(cloudCoinStr);

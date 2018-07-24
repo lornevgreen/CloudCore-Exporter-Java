@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public abstract class IFileSystem {
 
@@ -213,6 +214,9 @@ public abstract class IFileSystem {
             /*end import from jpeg file */
             //   System.out.println("Loaded coin filename: " + tempCoin.fileName);
             writeTo(BankFolder, tempCoin);
+            System.out.println("jpeg coin bytes: " + Arrays.toString(jpegHeader));
+            System.out.println("jpeg coin hex: " + wholeString);
+            System.out.println("jpeg coin: " + tempCoin.toString());
             return tempCoin;
         } catch (IOException e) {
             System.out.println("IO Exception:" + fileName + e);
@@ -586,13 +590,19 @@ public abstract class IFileSystem {
         return cc;
     }
 
-    // en d json test
+    // end json test
     public byte[] hexStringToByteArray(String HexString) {
         int NumberChars = HexString.length();
         byte[] bytes = new byte[NumberChars / 2];
+        System.out.println("Printing conversion:");
         for (int i = 0; i < NumberChars; i += 2) {
-            bytes[i / 2] = Byte.valueOf(HexString.substring(i, 2), 16);
+            String test = HexString.substring(i, i + 2);
+            if (test.length() == 0)
+                break;
+            bytes[i / 2] = Byte.valueOf(test, 16);
+            System.out.print(bytes[i / 2]);
         }
+        System.out.println("done with conversion");
         return bytes;
     }//End hex String to byte array
 }

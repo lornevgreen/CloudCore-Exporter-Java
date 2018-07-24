@@ -3,14 +3,15 @@ package com.cloudcore.exporter.core;
 import com.cloudcore.exporter.utils.Utils;
 
 import javax.imageio.ImageIO;
+import javax.xml.bind.DatatypeConverter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
 public class FileSystem extends IFileSystem {
 
@@ -79,28 +80,40 @@ public class FileSystem extends IFileSystem {
     @Override
     public boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile, String tag) {
         OutputFile = OutputFile.replace("\\\\", "\\");
-        boolean fileSavedSuccessfully = true;
 
-        // * TODO JPEG
         // BUILD THE CLOUDCOIN STRING //
         StringBuilder cloudCoinBuilder = new StringBuilder();
-        cloudCoinBuilder.append("01C34A46494600010101006000601D05"); //THUMBNAIL HEADER BYTES
+
+        // APP0 Marker
+        cloudCoinBuilder.append("01C34A46494600010101006000601D05");
+        // ANs (400 bytes)
         for (int i = 0; (i < 25); i++)
             cloudCoinBuilder.append(cloudCoin.an.get(i));
-
-        //cloudCoinStr.append("204f42455920474f4420262044454645415420545952414e545320"); // Hex for " OBEY GOD & DEFEAT TYRANTS "
-        //cloudCoinStr.append("20466f756e6465727320372d352d3137"); // Founders 7-5-17
-        cloudCoinBuilder.append("4c6976652046726565204f7220446965"); // Live Free or Die
-        cloudCoinBuilder.append("00000000000000000000000000"); // Set to unknown so program does not export user data
+        // AOID
+        cloudCoinBuilder.append("00000000000000000000000000000000"); // Set to unknown so program does not export user data
+        // POWN
+        cloudCoinBuilder.append(bytesToHexString(cloudCoin.pown.getBytes(StandardCharsets.UTF_8)));
+        // HC (Has Comments)
         cloudCoinBuilder.append("00"); // HC: Has comments. 00 = No
+        // ED (Months since August 2016)
         cloudCoin.CalcExpirationDate();
-        cloudCoinBuilder.append(cloudCoin.edHex); // 01; // Expiration date Sep 2016 (one month after zero month)
-        cloudCoinBuilder.append("01"); // cc.nn; // network number
+        cloudCoinBuilder.append(bytesToHexString(cloudCoin.edHex.getBytes(StandardCharsets.UTF_8))); // 01; // Expiration date Sep 2016 (one month after zero month)
+        // NN
+        cloudCoinBuilder.append("01");
+        // SN
         String fullHexSN = Utils.padString(Integer.toHexString(cloudCoin.getSn()).toUpperCase(), 6, '0');
         cloudCoinBuilder.append(fullHexSN);
-        // BYTES THAT WILL GO FROM 04 to 454 (Inclusive)//
-        byte[] ccArray = this.hexStringToByteArray(cloudCoinBuilder.toString());
 
+
+        System.out.println("edHex: " + bytesToHexString(cloudCoin.edHex.getBytes(StandardCharsets.UTF_8)));
+        System.out.println("ccArrayString: " + cloudCoinBuilder.toString());
+        // BYTES THAT WILL GO FROM 04 to 454 (Inclusive)//
+        byte[] ccArray = DatatypeConverter.parseHexBinary(cloudCoinBuilder.toString());
+
+        System.out.println("ccArray: " + Arrays.toString(ccArray));
+        System.out.println("ccArray length: " + Arrays.toString(ccArray).length());
+
+        // JPEG image data
         try {
             byte[] jpegBytes = Files.readAllBytes(Paths.get(TemplateFile));
             ByteArrayInputStream inputStream = new ByteArrayInputStream(jpegBytes);
@@ -111,7 +124,7 @@ public class FileSystem extends IFileSystem {
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_VRGB);
             graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            graphics.drawString(cloudCoin.getSn() + " of 16,777,216 on Network: 1", 30, 25);
+            graphics.drawString(cloudCoin.getSn() + " of 16,777,216 on Network: 1", 30, 50);
 
             graphics.drawImage(image, null, 0, 0);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -120,60 +133,21 @@ public class FileSystem extends IFileSystem {
             byte[] imageBytes = outputStream.toByteArray();
             outputStream.close();
 
-            // outputBytes is imageBytes and ccArray, with ccArray starting at index 4 in imageBytes
+            // outputBytes is imageBytes plus ccArray, with ccArray starting at index 4 in imageBytes
             byte[] outputBytes = new byte[ccArray.length + imageBytes.length];
             System.arraycopy(imageBytes, 0, outputBytes, 0, 4);
             System.arraycopy(ccArray, 0, outputBytes, 4, ccArray.length);
             System.arraycopy(imageBytes, 4, outputBytes, 4 + ccArray.length, 4);
 
-            //ArrayList<Byte> b1 = new ArrayList<Byte>(Arrays.asList(imageBytes));
-            //ArrayList<Byte> b2 = new ArrayList<Byte>(ccArray);
-            //b1.addAll(4, b2);
-
-
-            //byte[] output = Utils.combine(imageBytes, new byte[], )
             Files.write(Paths.get(OutputFile), imageBytes);
+            //System.out.println("Writing to " + fileName);
+            //CoreLogger.Log("Writing to " + fileName);
+
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
-
-        // WRITE THE SERIAL NUMBER ON THE JPEG //
-/*
-        Bitmap bitmapimage;
-
-        using (var ms = new MemoryStream(jpegBytes))
-        {
-            bitmapimage = new Bitmap(ms);
-        }
-
-        Graphics graphics = Graphics.FromImage(bitmapimage);
-        graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-        PointF drawPointAddress = new PointF(30.0F, 25.0F);
-        graphics.DrawString(String.format("{0:N0}", cloudCoin.getSn()) + " of 16,777,216 on Network: 1", new Font("Arial", 10), Brushes.White, drawPointAddress);
-
-        ImageConverter converter = new ImageConverter();
-        byte[] snBytes = (byte[])converter.ConvertTo(bitmapimage, typeof(byte[]));
-
-        ArrayList<Byte> b1 = new ArrayList<Byte>(snBytes);
-        ArrayList<Byte> b2 = new ArrayList<Byte>(ccArray);
-        b1.addAll(4, b2);
-
-        if (tag == "random")
-        {
-            Random r = new Random();
-            int rInt = r.Next(100000, 1000000); //for ints
-            tag = rInt.toString();
-        }
-
-        //String fileName = targetPath;
-
-        String fileName = ExportFolder + cloudCoin.FileName + ".jpg";
-        File.WriteAllBytes(OutputFile, b1.toArray());
-        //System.out.println("Writing to " + fileName);
-        //CoreLogger.Log("Writing to " + fileName);*/
-
-        return fileSavedSuccessfully;
     }
 
     @Override

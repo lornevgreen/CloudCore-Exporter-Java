@@ -568,81 +568,20 @@ public abstract class IFileSystem {
     }//End Write To
 
     public CloudCoin parseJpeg(String wholeString) {
-        String app0marker = wholeString.substring(0, 40);
-
-        boolean exportNewVersion = false;
-        if (!exportNewVersion)
-            return parseJpegOld(wholeString);
-
-        // If the APP0 marker is not v5.5.2017, then check for old versions and import accordingly.
-        switch (app0marker) {
-            // Version 5.5.2017
-            case "FFD8FFE001C34A46494600010101006000601D05":
-                break;
-                // Older version?
-            case "ff d8 ff e0 01 c3 4a 46 49 46 20 01 01 01 20 60 20 60 1d 05  ":
-                return parseJpegOld(wholeString);
-            default:
-                System.out.println("Unknown version. Returning null.");
-                return null;
-        }
-
         CloudCoin cc = new CloudCoin();
 
         int startAn = 40;
         for (int i = 0; i < 25; i++) {
             cc.an.add(wholeString.substring(startAn, startAn + 32));
-            System.out.println(i +": " + cc.an.get(i));
-            startAn += 32;
-        }
-
-        cc.aoid = null; // wholeString.substring(420, 435);
-        cc.pown = wholeString.substring(436, 448);
-        //cc.hc = wholeString.substring(451, 452);
-        cc.ed = wholeString.substring(450, 451);
-        cc.nn = Integer.valueOf(wholeString.substring(451, 452), 16);
-        cc.setSn(Integer.valueOf(wholeString.substring(452, 910), 16));
-
-        //cc.pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
-        return cc;
-    }
-
-    public CloudCoin parseJpegOld(String wholeString) {
-        CloudCoin cc = new CloudCoin();
-        int startAn = 40;
-        for (int i = 0; i < 25; i++) {
-            cc.an.add(wholeString.substring(startAn, startAn + 32));
-            //cc.an.set(i, wholeString.substring(startAn, 32));
-            // System.out.println(i +": " + cc.an[i]);
             startAn += 32;
         }
 
         cc.aoid = null;
-        // wholeString.substring( 840, 895 );
-        //cc.hp = 25;
-        // Integer.parseInt(wholeString.substring( 896, 896 ), 16);
+        cc.pown = wholeString.substring(842, 890);
+        //cc.hc = wholeString.substring(890, 898);
         cc.ed = wholeString.substring(898, 902);
-
         cc.nn = Integer.valueOf(wholeString.substring(902, 904), 16);
         cc.setSn(Integer.valueOf(wholeString.substring(904, 910), 16));
-        cc.pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
-        //  System.out.println("parseJpeg cc.fileName " + cc.fileName);
         return cc;
     }
-
-    // end json test
-    public byte[] hexStringToByteArray(String HexString) {
-        int NumberChars = HexString.length();
-        byte[] bytes = new byte[NumberChars / 2];
-        System.out.println("Printing conversion:");
-        for (int i = 0; i < NumberChars; i += 2) {
-            String test = HexString.substring(i, i + 2);
-            if (test.length() == 0)
-                break;
-            bytes[i / 2] = Byte.valueOf(test, 16);
-            System.out.print(bytes[i / 2]);
-        }
-        System.out.println("done with conversion");
-        return bytes;
-    }//End hex String to byte array
 }

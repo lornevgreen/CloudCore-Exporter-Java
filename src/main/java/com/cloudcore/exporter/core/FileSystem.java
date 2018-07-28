@@ -1,5 +1,6 @@
 package com.cloudcore.exporter.core;
 
+import com.cloudcore.exporter.utils.CloudCoinUtils;
 import com.cloudcore.exporter.utils.Utils;
 
 import javax.imageio.ImageIO;
@@ -26,7 +27,6 @@ public class FileSystem extends IFileSystem {
         QRFolder = ImportFolder + Config.TAG_QR;
         BarCodeFolder = ImportFolder + Config.TAG_BARCODE;
         CSVFolder = ImportFolder + Config.TAG_CSV;
-
     }
 
     public boolean CreateDirectories() {
@@ -92,26 +92,19 @@ public class FileSystem extends IFileSystem {
         // AOID
         cloudCoinBuilder.append("00000000000000000000000000000000"); // Set to unknown so program does not export user data
         // POWN
-        cloudCoinBuilder.append(bytesToHexString(cloudCoin.pown.getBytes(StandardCharsets.UTF_8)));
+        cloudCoinBuilder.append(CloudCoinUtils.pownToHex(cloudCoin));
         // HC (Has Comments)
         cloudCoinBuilder.append("00"); // HC: Has comments. 00 = No
-        // ED (Months since August 2016)
-        cloudCoin.CalcExpirationDate();
-        cloudCoinBuilder.append(bytesToHexString(cloudCoin.edHex.getBytes(StandardCharsets.UTF_8))); // 01; // Expiration date Sep 2016 (one month after zero month)
+        // ED (Expiration Date; months since August 2016)
+        cloudCoinBuilder.append(CloudCoinUtils.expirationDateToHex());
         // NN
         cloudCoinBuilder.append("01");
         // SN
         String fullHexSN = Utils.padString(Integer.toHexString(cloudCoin.getSn()).toUpperCase(), 6, '0');
         cloudCoinBuilder.append(fullHexSN);
 
-
-        System.out.println("edHex: " + bytesToHexString(cloudCoin.edHex.getBytes(StandardCharsets.UTF_8)));
-        System.out.println("ccArrayString: " + cloudCoinBuilder.toString());
         // BYTES THAT WILL GO FROM 04 to 454 (Inclusive)//
         byte[] ccArray = DatatypeConverter.parseHexBinary(cloudCoinBuilder.toString());
-
-        System.out.println("ccArray: " + Arrays.toString(ccArray));
-        System.out.println("ccArray length: " + Arrays.toString(ccArray).length());
 
         // JPEG image data
         try {
@@ -137,12 +130,11 @@ public class FileSystem extends IFileSystem {
             byte[] outputBytes = new byte[ccArray.length + imageBytes.length];
             System.arraycopy(imageBytes, 0, outputBytes, 0, 4);
             System.arraycopy(ccArray, 0, outputBytes, 4, ccArray.length);
-            System.arraycopy(imageBytes, 4, outputBytes, 4 + ccArray.length, 4);
+            System.arraycopy(imageBytes, 4, outputBytes, 4 + ccArray.length, imageBytes.length - 4);
 
-            Files.write(Paths.get(OutputFile), imageBytes);
+            Files.write(Paths.get(OutputFile), outputBytes);
             //System.out.println("Writing to " + fileName);
             //CoreLogger.Log("Writing to " + fileName);
-
             return true;
         } catch (IOException e) {
             e.printStackTrace();

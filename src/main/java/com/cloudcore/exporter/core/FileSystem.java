@@ -1,6 +1,6 @@
 package com.cloudcore.exporter.core;
 
-import com.cloudcore.exporter.utils.CloudCoinUtils;
+import com.cloudcore.exporter.utils.CoinUtils;
 import com.cloudcore.exporter.utils.Utils;
 
 import javax.imageio.ImageIO;
@@ -8,11 +8,9 @@ import javax.xml.bind.DatatypeConverter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class FileSystem extends IFileSystem {
 
@@ -92,11 +90,11 @@ public class FileSystem extends IFileSystem {
         // AOID
         cloudCoinBuilder.append("00000000000000000000000000000000"); // Set to unknown so program does not export user data
         // POWN
-        cloudCoinBuilder.append(CloudCoinUtils.pownToHex(cloudCoin));
+        cloudCoinBuilder.append(CoinUtils.pownToHex(cloudCoin));
         // HC (Has Comments)
         cloudCoinBuilder.append("00"); // HC: Has comments. 00 = No
         // ED (Expiration Date; months since August 2016)
-        cloudCoinBuilder.append(CloudCoinUtils.expirationDateToHex());
+        cloudCoinBuilder.append(CoinUtils.expirationDateToHex());
         // NN
         cloudCoinBuilder.append("01");
         // SN

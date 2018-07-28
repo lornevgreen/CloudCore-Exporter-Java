@@ -52,7 +52,7 @@ public class Utils {
 
         // Write the Coin Serial Numbers
         for (CloudCoin coin : coins) {
-            csv.append(coin.GetCSV() + System.lineSeparator());
+            csv.append(CoinUtils.toCSV(coin) + System.lineSeparator());
         }
         return csv;
     }

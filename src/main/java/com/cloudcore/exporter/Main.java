@@ -20,7 +20,6 @@ public class Main {
             Exporter exporter = new Exporter(FS);
             exporter.logger = logger;
 
-            System.out.println("Exporting Coins...");
             exporter.ExportCoins();
         } catch (Exception e) {
             System.out.println("Uncaught exception - " + e.getLocalizedMessage());

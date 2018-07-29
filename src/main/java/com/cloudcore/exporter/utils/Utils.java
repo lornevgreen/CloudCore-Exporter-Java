@@ -6,11 +6,6 @@ import com.cloudcore.exporter.core.Stack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,17 +19,6 @@ public class Utils {
                 .excludeFieldsWithoutExposeAnnotation()
                 .setPrettyPrinting()
                 .create();
-    }
-
-    public static CloudCoin[] LoadJson(String filename) {
-        try {
-            byte[] json = Files.readAllBytes(Paths.get(filename));
-            Gson gson = createGson();
-            Stack coins = gson.fromJson(new String(json), Stack.class);
-            return coins.cc;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     @SuppressWarnings("unused")
@@ -55,18 +39,6 @@ public class Utils {
             csv.append(CoinUtils.toCSV(coin) + System.lineSeparator());
         }
         return csv;
-    }
-
-
-    private static Random random = new Random();
-    private static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    public static String RandomString(int length) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            builder.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return builder.toString();
     }
 
     public static String padString(String string, int length, char padding) {

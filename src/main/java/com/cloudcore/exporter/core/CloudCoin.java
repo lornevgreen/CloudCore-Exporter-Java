@@ -1,13 +1,9 @@
 package com.cloudcore.exporter.core;
 
-import com.cloudcore.exporter.utils.CoinUtils;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.time.LocalDate;
 import java.util.*;
-
-import static java.time.temporal.ChronoUnit.DAYS;
 
 public class CloudCoin {
 
@@ -32,7 +28,6 @@ public class CloudCoin {
     public ArrayList<String> aoid;
 
     public transient String[] pan = new String[Config.NodeCount];
-    public transient String edHex;// Months from zero date that the coin will expire.
 
     public transient String currentFilename;
     public transient String currentExtension;
@@ -51,6 +46,8 @@ public class CloudCoin {
      * @return
      */
     public CloudCoin(String csv) {
+        // TODO: Add currentFilename and currentExtension
+
         try {
             String[] values = csv.split(",");
             System.out.println(values[0]);

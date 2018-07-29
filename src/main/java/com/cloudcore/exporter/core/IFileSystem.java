@@ -15,8 +15,6 @@ import java.util.ArrayList;
 
 public abstract class IFileSystem {
 
-    public enum FileMoveOptions {Replace, Rename}
-
     public String RootPath;
 
     public String ImportFolder;
@@ -24,62 +22,12 @@ public abstract class IFileSystem {
     public String BankFolder;
     public String FrackedFolder;
     public String TemplateFolder;
-    public String QRFolder;
-    public String BarCodeFolder;
     public String CSVFolder;
 
     public String LogsFolder;
 
-    //public abstract IFileSystem(String path);
-
-    public static ArrayList<CloudCoin> importCoins;
     public static ArrayList<CloudCoin> frackedCoins;
     public static ArrayList<CloudCoin> bankCoins;
-
-    public ArrayList<CloudCoin> LoadCoinsByFormat(String folder, Formats format) {
-        ArrayList<CloudCoin> folderCoins = new ArrayList<>();
-        CloudCoin coin;
-
-        String allowedExtension = "";
-        switch (format) {
-            case CSV:
-                allowedExtension = "csv";
-                break;
-            case BarCode:
-            case QRCode:
-                allowedExtension = "jpg";
-                break;
-        }
-
-        String[] fileNames = FileUtils.selectFileNamesInFolder(folder);
-        String extension;
-        for (String fileName : fileNames) {
-            int index = fileName.lastIndexOf('.');
-            if (index > 0) {
-                extension = fileName.substring(index + 1);
-
-                if (allowedExtension.equalsIgnoreCase(extension)) {
-                    switch (format) {
-                        case CSV:
-                            ArrayList<CloudCoin> csvCoins = ReadCSVCoins(fileName);
-                            csvCoins.remove(null);
-                            folderCoins.addAll(csvCoins);
-                            break;
-                        case BarCode:
-                            //TODO BARCODE coin = ReadBARCode(fileName);
-                            //folderCoins.add(coin);
-                            break;
-                        case QRCode:
-                            //TODO QRCODE coin = ReadQRCode(fileName);
-                            //folderCoins.add(coin);
-                            break;
-                    }
-                }
-            }
-        }
-
-        return folderCoins;
-    }
 
     public ArrayList<CloudCoin> LoadFolderCoins(String folder) {
         ArrayList<CloudCoin> folderCoins = new ArrayList<>();
@@ -125,60 +73,6 @@ public abstract class IFileSystem {
 
         return folderCoins;
     }
-/* TODO QRCODE BARCODE
-    // Read a CloudCoin from QR Code
-    private CloudCoin ReadQRCode(String fileName)
-    {
-        try
-        {
-            Bitmap bitmap = new Bitmap(fileName);
-            BarcodeReader reader = new BarcodeReader { AutoRotate = true, TryInverted = true };
-            //Result result = reader.Decode(bitmap);
-            String decoded = result.toString().Trim();
-
-            CloudCoin cloudCoin = JsonConvert.DeserializeObject<CloudCoin>(decoded);
-            return cloudCoin;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private CloudCoin ReadBARCode(String fileName)//Read a CloudCoin from BAR Code . 
-    {
-        try
-        {
-            var barcodeReader = new BarcodeReader();
-            Bitmap bitmap = new Bitmap(fileName);
-
-            var barcodeResult = barcodeReader.Decode(bitmap);
-            String decoded = barcodeResult.toString().Trim();
-
-            CloudCoin cloudCoin = JsonConvert.DeserializeObject<CloudCoin>(decoded);
-            return cloudCoin;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-*/
-    private ArrayList<CloudCoin> ReadCSVCoins(String fileName)//Read a CloudCoin from CSV . 
-    {
-        ArrayList<CloudCoin> cloudCoins = new ArrayList<>();
-        ArrayList<String> lines;
-        try {
-            lines = new ArrayList<>(Files.readAllLines(Paths.get(fileName)));
-            for (String line : lines)
-                cloudCoins.add(new CloudCoin(line));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return cloudCoins;
-    }
 
     // Move one jpeg to suspect folder.
     private CloudCoin importJPEG(String fileName) {
@@ -220,16 +114,7 @@ public abstract class IFileSystem {
         return null;
     }
 
-    public CloudCoin LoadCoin(String fileName) {
-        CloudCoin[] coins = Utils.LoadJson(fileName);
-
-        if (coins != null && coins.length > 0)
-            return coins[0];
-        return null;
-    }
-
-
-    // en d json test
+    // end json test
     public String setJSON(CloudCoin cc) {
         final String quote = "\"";
         final String tab = "\t";
@@ -268,12 +153,9 @@ public abstract class IFileSystem {
 
 
     public void RemoveCoins(ArrayList<CloudCoin> coins, String folder) {
-        RemoveCoins(coins, folder, ".stack");
-    }
-    public void RemoveCoins(ArrayList<CloudCoin> coins, String folder, String extension) {
         for (CloudCoin coin : coins) {
             try {
-                System.out.println("deleting" + folder + coin.currentFilename + coin.currentExtension);
+                System.out.println("deleting: " + folder + coin.currentFilename + coin.currentExtension);
                 Files.deleteIfExists(Paths.get(folder + coin.currentFilename + coin.currentExtension));
             } catch (IOException e) {
                 System.out.println(e.getLocalizedMessage());
@@ -302,85 +184,15 @@ public abstract class IFileSystem {
         }
     }
 
-    public boolean writeQrCode(CloudCoin cc, String tag) {
-        /* TODO TODO QRCODE
-        String fileName = ExportFolder + cc.FileName() + "qr." + tag + ".jpg";
-        cc.pan = null;
-        QRCodeGenerator qrGenerator = new QRCodeGenerator();
-        String json = JsonConvert.SerializeObject(cc);
-
-        try
-        {
-            json.replace("\\", "");
-            QRCodeData qrCodeData = qrGenerator.CreateQrCode(cc.GetCSV(), QRCodeGenerator.ECCLevel.Q);
-            QRCode qrCode = new QRCode(qrCodeData);
-            System.Drawing.Bitmap qrCodeImage = qrCode.GetGraphic(20);
-
-            qrCodeImage.Save(fileName);
-
-            return true;
-        }
-        catch(Exception e)
-        {
-            System.out.println(e.getLocalizedMessage());
-            return false;
-        }*/
-        return false;
-    }
-
-    public boolean writeBarCode() {
-        /* TODO BARCODE
-        String fileName = ExportFolder + cc.FileName + "barcode." + tag + ".jpg";
-        cc.pan = null;
-        QRCodeGenerator qrGenerator = new QRCodeGenerator();
-
-
-        try
-        {
-            String json = JsonConvert.SerializeObject(cc);
-            var barcode = new Barcode(json, Settings.Default);
-            barcode.Canvas.SaveBmp(fileName);
-
-            return true;
-        }
-        catch (Exception e)
-        {
-            System.out.println(e.getLocalizedMessage());
-            return false;
-        }*/
-        return true;
-    }
-
-    public abstract boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile, String tag);
-
-    public abstract boolean WriteCoinToQRCode(CloudCoin cloudCoin, String OutputFile);
-
-    public abstract boolean WriteCoinToBARCode(CloudCoin cloudCoin, String OutputFile);
+    public abstract boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile);
 
     public String GetCoinTemplate(CloudCoin cloudCoin) {
         int denomination = CoinUtils.getDenomination(cloudCoin);
-        String TemplatePath = "";
-        switch (denomination) {
-            case 1:
-                TemplatePath = this.TemplateFolder + "jpeg1.jpg";
-                break;
-            case 5:
-                TemplatePath = this.TemplateFolder + "jpeg5.jpg";
-                break;
-            case 25:
-                TemplatePath = this.TemplateFolder + "jpeg25.jpg";
-                break;
-            case 100:
-                TemplatePath = this.TemplateFolder + "jpeg100.jpg";
-                break;
-            case 250:
-                TemplatePath = this.TemplateFolder + "jpeg250.jpg";
-                break;
 
-            default:
-                break;
-        }
-        return TemplatePath;
+        if (denomination == 0)
+            return null;
+        else
+            return TemplateFolder + "jpeg" + denomination + ".jpg";
     }
 
     public String bytesToHexString(byte[] data) {
@@ -390,25 +202,6 @@ public abstract class IFileSystem {
             hex.append(HexChart.charAt((b & 0xF0) >> 4)).append(HexChart.charAt((b & 0x0F)));
         return hex.toString();
     }
-
-    private char GetHexValue(int i) {
-        if (i < 10) {
-            return (char) (i + 0x30);
-        }
-        return (char) ((i - 10) + 0x41);
-    }//end GetHexValue
-
-    /* Writes a JPEG To the Export Folder */
-
-    /* OPEN FILE AND READ ALL CONTENTS AS BYTE ARRAY */
-    public byte[] readAllBytes(String fileName) {
-        try {
-            return Files.readAllBytes(Paths.get(fileName));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }//end read all bytes
 
     public boolean writeTo(String folder, CloudCoin cc) {
         //CoinUtils cu = new CoinUtils(cc);

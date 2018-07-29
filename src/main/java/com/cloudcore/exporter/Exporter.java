@@ -5,7 +5,6 @@ import com.cloudcore.exporter.utils.CoinUtils;
 import com.cloudcore.exporter.utils.SimpleLogger;
 import com.cloudcore.exporter.utils.Utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -87,7 +86,7 @@ public class Exporter {
         Scanner reader = new Scanner(System.in);
         String stackType = "1";
 
-        System.out.println("Do you want to export your CloudCoin to (1)jpgs , (2) stack (JSON) , (3) QR Code (4) 2D Bar code (5) CSV file?");
+        System.out.println("Do you want to export your CloudCoin to (1)jpgs, (2) stack (JSON), or (3) CSV file?");
         String fileType = reader.next();
         if ("2".equals(fileType)) {
             System.out.println("Export All Coins to Single Stack (1) or One Stack per coin (2)?");
@@ -186,7 +185,7 @@ public class Exporter {
         if ("1".equals(fileType)) {
             for (CloudCoin coin : exportCoins) {
                 String OutputFile = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag + ".jpg";
-                boolean fileGenerated = fileSystem.WriteCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), OutputFile, "");
+                boolean fileGenerated = fileSystem.WriteCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), OutputFile);
                 if (fileGenerated)
                     updateLog("CloudCoin exported as Jpeg to " + OutputFile);
             }
@@ -214,36 +213,8 @@ public class Exporter {
             }
         }
 
-        // Export Coins as QR Code
-        else if ("3".equals(fileType)) {
-            // No filename
-            for (CloudCoin coin : exportCoins) {
-                String OutputFile = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + ".qr" + tag + ".jpg";
-                boolean fileGenerated = fileSystem.WriteCoinToQRCode(coin, OutputFile);
-                if (fileGenerated)
-                    updateLog("CloudCoin Exported as QR code to " + OutputFile);
-            }
-
-            fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-            fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
-        }
-
-        // Export Coins as 2D Bar code - PDF417
-        else if ("4".equals(fileType)) {
-            // No filename
-            for (CloudCoin coin : exportCoins) {
-                String OutputFile = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + ".barcode" + tag + ".jpg";
-                boolean fileGenerated = fileSystem.WriteCoinToBARCode(coin, OutputFile);
-                if (fileGenerated)
-                    updateLog("CloudCoin Exported as Bar code to " + OutputFile);
-            }
-
-            fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-            fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
-        }
-
         // Export Coins as CSV
-        else if ("5".equals(fileType)) {
+        else if ("3".equals(fileType)) {
             filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag + ".csv");
             if (Files.exists(Paths.get(filename))) {
                 // tack on a random number if a file already exists with the same tag

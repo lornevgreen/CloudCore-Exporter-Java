@@ -90,7 +90,6 @@ public class FileUtils {
      */
     public static String[] selectFileNamesInFolder(String directoryPath) {
         File dir = new File(directoryPath);
-        String candidateFileExt = "";
         Collection<String> files = new ArrayList<String>();
         if (dir.isDirectory()) {
             File[] listFiles = dir.listFiles();

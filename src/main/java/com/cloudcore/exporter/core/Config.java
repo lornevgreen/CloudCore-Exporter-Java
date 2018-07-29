@@ -13,8 +13,6 @@ public class Config  {
     public static int NodeCount = 25;
 
     public static String TAG_LOGS = "Logs";
-    public static String TAG_QR = "QrCodes";
-    public static String TAG_BARCODE = "Barcodes";
     public static String TAG_CSV = "CSV";
 
 }

@@ -13,10 +13,6 @@ public class CoinUtils {
     public static void calcExpirationDate(CloudCoin coin) {
         LocalDate expirationnnnDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
         coin.ed = (expirationnnnDate.getMonth() + "-" + expirationnnnDate.getYear());
-
-        LocalDate zeroDateee = LocalDate.of(2016, 8, 13);
-        int monthsAfterZero = (int) (DAYS.between(expirationnnnDate, zeroDateee) / (365.25 / 12));
-        coin.edHex = String.format("0x%08X", monthsAfterZero);
     }
 
     public static String toCSV(CloudCoin coin) {

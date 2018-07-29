@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 public class FileSystem extends IFileSystem {
 
@@ -22,8 +21,6 @@ public class FileSystem extends IFileSystem {
         FrackedFolder = RootPath + File.separator + Config.TAG_FRACKED + File.separator;
         BankFolder = RootPath + File.separator + Config.TAG_BANK + File.separator;
         LogsFolder = RootPath + File.separator + Config.TAG_LOGS + File.separator;
-        QRFolder = ImportFolder + Config.TAG_QR;
-        BarCodeFolder = ImportFolder + Config.TAG_BARCODE;
         CSVFolder = ImportFolder + Config.TAG_CSV;
     }
 
@@ -39,8 +36,6 @@ public class FileSystem extends IFileSystem {
             Files.createDirectories(Paths.get(BankFolder));
             Files.createDirectories(Paths.get(FrackedFolder));
             Files.createDirectories(Paths.get(TemplateFolder));
-            Files.createDirectories(Paths.get(QRFolder));
-            Files.createDirectories(Paths.get(BarCodeFolder));
             Files.createDirectories(Paths.get(CSVFolder));
 
             Files.createDirectories(Paths.get(LogsFolder));
@@ -55,28 +50,14 @@ public class FileSystem extends IFileSystem {
     }
 
     public void LoadFileSystem() {
-        importCoins = LoadFolderCoins(ImportFolder);
-        ArrayList<CloudCoin> csvCoins = LoadCoinsByFormat(ImportFolder + File.separator + "CSV", Formats.CSV);
-        ArrayList<CloudCoin> qrCoins = LoadCoinsByFormat(ImportFolder + File.separator + "QrCodes", Formats.QRCode);
-        ArrayList<CloudCoin> BarCodeCoins = LoadCoinsByFormat(ImportFolder + File.separator + "Barcodes", Formats.BarCode);
 
-        // Add Additional File formats if present
-        //importCoins = importCoins.Concat(csvCoins);
-        importCoins.addAll(BarCodeCoins);
-        importCoins.addAll(qrCoins);
 
-        //exportCoins = LoadFolderCoins(ExportFolder);
         bankCoins = LoadFolderCoins(BankFolder);
         frackedCoins = LoadFolderCoins(FrackedFolder);
-        //importedCoins = LoadFolderCoins(ImportedFolder);
-        //trashCoins = LoadFolderCoins(TrashFolder);
-        //LoadFolderCoins(TemplateFolder);
-        //counterfeitCoins = LoadFolderCoins(CounterfeitFolder);
-
     }
 
     @Override
-    public boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile, String tag) {
+    public boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile) {
         OutputFile = OutputFile.replace("\\\\", "\\");
 
         // BUILD THE CLOUDCOIN STRING //
@@ -138,67 +119,6 @@ public class FileSystem extends IFileSystem {
             e.printStackTrace();
             return false;
         }
-    }
-
-    @Override
-    public boolean WriteCoinToQRCode(CloudCoin cloudCoin, String OutputFile) {
-        /* TODO QRCODE
-            int width = 250; // width of the Qr Code
-            int height = 250; // height of the Qr Code
-            int margin = 0;
-            var qrCodeWriter = new ZXing.BarcodeWriterPixelData()
-            {
-                Format = ZXing.BarcodeFormat.QR_CODE,
-                        Options = new QrCodeEncodingOptions
-                {
-                    Height = height,
-                            Width = width,
-                            Margin = margin
-                }
-            };
-            String coinJson = JsonConvert.SerializeObject(cloudCoin);
-            var pixelData = qrCodeWriter.Write(coinJson);
-            // creating a bitmap from the raw pixel data; if only black and white colors are used it makes no difference
-            // that the pixel data ist BGRA oriented and the bitmap is initialized with RGB
-            using (var bitmap = new System.Drawing.Bitmap(pixelData.Width, pixelData.Height, System.Drawing.Imaging.PixelFormatFormat32bppRgb))
-            using (var ms = new MemoryStream())
-            {
-                var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, pixelData.Width, pixelData.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormatFormat32bppRgb);
-                try
-                {
-                    // we assume that the row stride of the bitmap is aligned to 4 byte multiplied by the width of the image
-                    System.Runtime.InteropServices.Marshal.Copy(pixelData.Pixels, 0, bitmapData.Scan0, pixelData.Pixels.length);
-                }
-                finally
-                {
-                    bitmap.UnlockBits(bitmapData);
-                }
-                // save to stream as PNG
-                bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-                bitmap.Save(OutputFile);
-            }*/
-
-            return true;
-    }
-
-    @Override
-    public boolean WriteCoinToBARCode(CloudCoin cloudCoin, String OutputFile) {
-            /* TODO BARCODE
-            var writer = new BarcodeWriter()
-            {
-                Format = BarcodeFormat.PDF_417,
-                        Options = new EncodingOptions { Width = 200, Height = 50 } //optional
-            };
-            cloudCoin.pan = null;
-            var coinJson = JsonConvert.SerializeObject(cloudCoin);
-            var imgBitmap = writer.Write(coinJson);
-            using (var stream = new MemoryStream())
-            {
-                imgBitmap.Save(stream, ImageFormat.Png);
-                stream.toArray();
-                imgBitmap.Save(OutputFile);
-            }*/
-            return true;
     }
 }
 

@@ -45,9 +45,8 @@ public abstract class IFileSystem {
                     case "celeb":
                     case "celebrium":
                     case "stack":
-                        ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromJSON(filepath);
-                        if (coins != null)
-                            folderCoins.addAll(coins);
+                        ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromStack(filepath);
+                        folderCoins.addAll(coins);
                         break;
                     case "jpg":
                     case "jpeg":
@@ -60,7 +59,7 @@ public abstract class IFileSystem {
                             ArrayList<CloudCoin> csvCoins = new ArrayList<>();
                             lines = new ArrayList<>(Files.readAllLines(Paths.get(filepath)));
                             for (String line : lines) {
-                                csvCoins.add(new CloudCoin(line, fileName));
+                                csvCoins.add(CloudCoin.fromCsv(line, fileName));
                             }
                             csvCoins.remove(null);
                             folderCoins.addAll(csvCoins);
@@ -75,42 +74,29 @@ public abstract class IFileSystem {
         return folderCoins;
     }
 
-    // Move one jpeg to suspect folder.
+    /**
+     * Import a CloudCoin embedded in a jpg header.
+     */
     private CloudCoin importJPEG(String fileName) {
         try {
-            //CloudCoin tempCoin = this.fileUtils.loadOneCloudCoinFromJPEGFile( fileUtils.importFolder + fileName );
-
-            /*Begin import from jpeg*/
-
-            /* GET the first 455 bytes of he jpeg where the coin is located */
-            String wholeString = "";
-            byte[] jpegHeader = new byte[455];
-            // System.out.println("Load file path " + fileUtils.importFolder + fileName);
-
-            int count;                            // actual number of bytes read
-            int sum = 0;                          // total number of bytes read
+            byte[] headerBytes = new byte[455];
+            String header = "";
+            int count, sum = 0;
 
             FileInputStream inputStream = new FileInputStream(new File(fileName));
             // read until Read method returns 0 (end of the stream has been reached)
-            while ((count = inputStream.read(jpegHeader, sum, 455 - sum)) > 0) {
-                sum += count;  // sum is a buffer offset for next reading
+            while ((count = inputStream.read(headerBytes, sum, 455 - sum)) > 0) {
+                sum += count; // sum is a buffer offset for next reading
             }
             inputStream.close();
 
-            wholeString = bytesToHexString(jpegHeader);
-            CloudCoin tempCoin = parseJpeg(wholeString);
-            // System.out.println("From FileUtils returnCC.fileName " + tempCoin.fileName);
-            /*end import from jpeg file */
-            //   System.out.println("Loaded coin filename: " + tempCoin.fileName);
+            header = bytesToHexString(headerBytes);
+            CloudCoin tempCoin = CloudCoin.fromJpgHeader(header, fileName.substring(fileName.lastIndexOf(File.separatorChar)));
             writeTo(BankFolder, tempCoin);
-            //System.out.println("jpeg coin bytes: " + Arrays.toString(jpegHeader));
-            //System.out.println("jpeg coin hex: " + wholeString);
-            //System.out.println("jpeg coin: " + tempCoin.toString());
             return tempCoin;
         } catch (IOException e) {
             System.out.println("IO Exception:" + fileName + e);
             e.printStackTrace();
-            //CoreLogger.Log("IO Exception:" + fileName + ioex);
         }
         return null;
     }
@@ -242,22 +228,4 @@ public abstract class IFileSystem {
         }
 
     }//End Write To
-
-    public CloudCoin parseJpeg(String wholeString) {
-        CloudCoin cc = new CloudCoin();
-
-        int startAn = 40;
-        for (int i = 0; i < 25; i++) {
-            cc.an.add(wholeString.substring(startAn, startAn + 32));
-            startAn += 32;
-        }
-
-        cc.aoid = null;
-        cc.pown = wholeString.substring(842, 890);
-        //cc.hc = wholeString.substring(890, 898);
-        cc.ed = wholeString.substring(898, 902);
-        cc.nn = Integer.valueOf(wholeString.substring(902, 904), 16);
-        cc.setSn(Integer.valueOf(wholeString.substring(904, 910), 16));
-        return cc;
-    }
 }

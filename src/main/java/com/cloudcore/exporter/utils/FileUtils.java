@@ -1,9 +1,7 @@
 package com.cloudcore.exporter.utils;
 
 import com.cloudcore.exporter.core.CloudCoin;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.cloudcore.exporter.core.Stack;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class FileUtils {
@@ -62,50 +61,23 @@ public class FileUtils {
         return jsonData;
     }
 
-    /** Attempt to read an array of CloudCoins from a JSON String. */
-    public static ArrayList<CloudCoin> loadCloudCoinsFromJSON(String fileName) {
-        ArrayList<CloudCoin> cloudCoins = new ArrayList<>();
-
-        String fileJson;
-        fileJson = loadJSON(fileName);
+    public static ArrayList<CloudCoin> loadCloudCoinsFromStack(String fileName) {
+        String fileJson = loadJSON(fileName);
         if (fileJson == null) {
             System.out.println("File " + fileName + " was not imported.");
-            return cloudCoins;
+            return new ArrayList<>();
         }
 
-        JSONArray incomeJsonArray;
         try {
-            JSONObject json = new JSONObject(fileJson);
-            incomeJsonArray = (json.has("cloudcoin")) ? json.getJSONArray("cloudcoin") : new JSONArray().put(json);
-            for (int i = 0; i < incomeJsonArray.length(); i++) {
-                JSONObject childJSONObject = incomeJsonArray.getJSONObject(i);
-                int nn = childJSONObject.getInt("nn");
-                int sn = childJSONObject.getInt("sn");
-                JSONArray an = childJSONObject.getJSONArray("an");
-                ArrayList<String> ans = toStringArrayList(an);
-                String ed = childJSONObject.getString("ed");
-                String pown = childJSONObject.optString("pown", "");
-                String aoidKey = (childJSONObject.has("aoid"))? "aoid" : "aoidText";
-                ArrayList<String> aoid = toStringArrayList(childJSONObject.getJSONArray(aoidKey));
-
-                // Invalid Serial Number
-                if (sn < 1 || sn > 16777216)
-                    continue;
-
-                // Correct null/missing values
-                if (ed == null || ed.length() == 0)
-                    ed = CoinUtils.calcExpirationDate();
-                if (pown == null || pown.length() == 0)
-                    pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
-
-                cloudCoins.add(new CloudCoin(fileName, nn, sn, ans, ed, pown, aoid));
-            }
-        } catch (JSONException e){
-            System.out.println("JSON File " + fileName + " was not imported. " + e.getLocalizedMessage());
-            //e.printStackTrace();
+            Stack stack = Utils.createGson().fromJson(fileJson, Stack.class);
+            for (CloudCoin coin : stack.cc)
+                coin.setFilename(fileName);
+            return new ArrayList<>(Arrays.asList(stack.cc));
+        } catch (Exception e) {
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-
-        return cloudCoins;
     }
 
     /**
@@ -127,21 +99,5 @@ public class FileUtils {
             }
         }
         return files.toArray(new String[]{});
-    }
-
-    /**
-     * Converts a JSONArray to a String ArrayList
-     *
-     * @param jsonArray a JSONArray Object
-     * @return String[]
-     */
-    public static ArrayList<String> toStringArrayList(JSONArray jsonArray) {
-        if (jsonArray == null)
-            return new ArrayList<>();
-
-        ArrayList<String> arr = new ArrayList<>(jsonArray.length());
-        for (int i = 0; i < jsonArray.length(); i++)
-            arr.add(jsonArray.optString(i));
-        return arr;
     }
 }

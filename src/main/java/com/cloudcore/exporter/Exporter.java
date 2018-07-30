@@ -80,39 +80,53 @@ public class Exporter {
     public void ExportCoins() {
         CalculateTotals();
         Scanner reader = new Scanner(System.in);
-        String stackType = "1";
+        int stackType = 1;
 
         // Ask for export type.
         System.out.println("Do you want to export your CloudCoin to (1) stack (JSON), (2) jpgs, or (3) CSV file?");
-        String fileType = reader.next();
+        int fileType = reader.nextInt();
+        if (fileType < 0 || 3 < fileType) {
+            System.out.println("Invalid option. No CloudCoins were exported. Exiting...");
+            return;
+        }
 
         // Ask for export subtype for stacks.
-        if ("1".equals(fileType)) {
+        if (1 == fileType) {
             System.out.println("Export All Coins to Single Stack (1) or One Stack per coin (2)?");
-            stackType = reader.next();
+            stackType = reader.nextInt();
+            if (!(stackType == 1 || stackType == 2)) {
+                System.out.println("Invalid option. No CloudCoins were exported. Exiting...");
+                return;
+            }
         }
 
         // Ask for amounts to export.
-        int exp_1 = 0, exp_5 = 0, exp_25 = 0, exp_100 = 0, exp_250 = 0;
+        int exp_1 = 0;
+        int exp_5 = 0, exp_25 = 0, exp_100 = 0, exp_250 = 0;
         if (onesTotalCount > 0) {
             System.out.println("How many 1s do you want to export?");
-            exp_1 = Math.min(Utils.tryParseInteger(reader.next()), onesTotalCount);
+            exp_1 = Math.min(reader.nextInt(), onesTotalCount);
+            exp_1 = Math.max(0, exp_1);
         }
         if (fivesTotalCount > 0) {
             System.out.println("How many 5s do you want to export?");
-            exp_5 = Math.min(Utils.tryParseInteger(reader.next()), fivesTotalCount);
+            exp_5 = Math.min(reader.nextInt(), fivesTotalCount);
+            exp_5 = Math.max(0, exp_5);
         }
         if ((qtrTotalCount > 0)) {
             System.out.println("How many 25s do you want to export?");
-            exp_25 = Math.min(Utils.tryParseInteger(reader.next()), qtrTotalCount);
+            exp_25 = Math.min(reader.nextInt(), qtrTotalCount);
+            exp_25 = Math.max(0, exp_25);
         }
         if (hundredsTotalCount > 0) {
             System.out.println("How many 100s do you want to export?");
-            exp_100 = Math.min(Utils.tryParseInteger(reader.next()), hundredsTotalCount);
+            exp_100 = Math.min(reader.nextInt(), hundredsTotalCount);
+            exp_25 = Math.max(0, exp_25);
         }
         if (twoFiftiesTotalCount > 0) {
             System.out.println("How many 250s do you want to export?");
-            exp_250 = Math.min(Utils.tryParseInteger(reader.next()), twoFiftiesTotalCount);
+            exp_250 = Math.min(reader.nextInt(), twoFiftiesTotalCount);
+            exp_25 = Math.max(0, exp_25);
         }
 
         // Ask for an optional tag to be appended in the filename.
@@ -168,9 +182,9 @@ public class Exporter {
 
         String filename;
 
-        // Export Coins as Stack
-        if ("1".equals(fileType)) {
-            if ("1".equals(stackType)) { // Single Stack, or individual Stacks
+        // Export Coins as one Stack or individual Stacks
+        if (1 == fileType) {
+            if (1 == stackType) {
                 filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
                 filename = FileUtils.ensureFilenameUnique(filename, ".stack");
                 fileSystem.WriteCoinsToStack(exportCoins, filename);
@@ -186,7 +200,7 @@ public class Exporter {
         }
 
         // Export Coins as jpg Images
-        else if ("2".equals(fileType)) {
+        else if (2 == fileType) {
             for (CloudCoin coin : exportCoins) {
                 filename = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag;
                 filename = FileUtils.ensureFilenameUnique(filename, ".jpg");
@@ -197,7 +211,7 @@ public class Exporter {
         }
 
         // Export Coins as CSV
-        else if ("3".equals(fileType)) {
+        else if (3 == fileType) {
             filename = fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag;
             filename = FileUtils.ensureFilenameUnique(filename, ".csv");
             boolean fileGenerated = fileSystem.WriteCoinToCsv(exportCoins, filename);

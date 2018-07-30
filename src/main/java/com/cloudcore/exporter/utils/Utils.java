@@ -44,14 +44,4 @@ public class Utils {
     public static String padString(String string, int length, char padding) {
         return String.format("%" + length + "s", string).replace(' ', padding);
     }
-
-
-    public static int tryParseInteger(String string) {
-        try {
-            return Integer.parseInt(string);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
 }

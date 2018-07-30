@@ -59,7 +59,7 @@ public class FileSystem extends IFileSystem {
     public boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile) {
         OutputFile = OutputFile.replace("\\\\", "\\");
 
-        // BUILD THE CLOUDCOIN STRING //
+        // BUILD THE CLOUDCOIN STRING
         StringBuilder cloudCoinBuilder = new StringBuilder();
 
         // APP0 Marker
@@ -70,11 +70,11 @@ public class FileSystem extends IFileSystem {
         // AOID
         cloudCoinBuilder.append("00000000000000000000000000000000"); // Set to unknown so program does not export user data
         // POWN
-        cloudCoinBuilder.append(CoinUtils.pownToHex(cloudCoin));
-        // HC (Has Comments)
-        cloudCoinBuilder.append("00"); // HC: Has comments. 00 = No
+        cloudCoinBuilder.append(CoinUtils.pownStringToHex(cloudCoin));
+        // HC (Has Comments) 0 = No
+        cloudCoinBuilder.append("00");
         // ED (Expiration Date; months since August 2016)
-        cloudCoinBuilder.append(CoinUtils.expirationDateToHex());
+        cloudCoinBuilder.append(CoinUtils.expirationDateStringToHex());
         // NN
         cloudCoinBuilder.append("01");
         // SN
@@ -111,8 +111,6 @@ public class FileSystem extends IFileSystem {
             System.arraycopy(imageBytes, 4, outputBytes, 4 + ccArray.length, imageBytes.length - 4);
 
             Files.write(Paths.get(OutputFile + ".jpg"), outputBytes);
-            //System.out.println("Writing to " + fileName);
-            //CoreLogger.Log("Writing to " + fileName);
             return true;
         } catch (IOException e) {
             e.printStackTrace();

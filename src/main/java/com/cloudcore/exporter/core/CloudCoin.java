@@ -35,8 +35,34 @@ public class CloudCoin {
 
     /* Constructors */
 
-    public CloudCoin() {
-        an = new ArrayList<>();
+    private CloudCoin(String filename) {
+        setFilename(filename);
+    }
+
+    /**
+     * CloudCoin Constructor for importing a CloudCoin from a CSV file. (Comma-Separated Values)
+     *
+     * @param header JPG header string.
+     * @param filename Filename
+     * @return CloudCoin
+     */
+    public static CloudCoin fromJpgHeader(String header, String filename) {
+        CloudCoin cc = new CloudCoin(filename);
+
+        int startAn = 40;
+        for (int i = 0; i < 25; i++) {
+            cc.an.add(header.substring(startAn, startAn + 32));
+            startAn += 32;
+        }
+
+        cc.aoid = null; //header.substring(808, 840);
+        cc.pown = CoinUtils.pownHexToString(header.substring(840, 872));
+        //cc.hc = header.substring(890, 898);
+        cc.ed = CoinUtils.expirationDateHexToString(header.substring(900, 902));
+        cc.nn = Integer.valueOf(header.substring(902, 904), 16);
+        cc.setSn(Integer.valueOf(header.substring(904, 910), 16));
+
+        return cc;
     }
 
     /**
@@ -44,49 +70,29 @@ public class CloudCoin {
      *
      * @param csv csv String
      * @param filename Filename
-     * @return
+     * @return CloudCoin
      */
-    public CloudCoin(String csv, String filename) {
-        currentExtension = filename.substring(filename.lastIndexOf('.'));
-        currentFilename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1,
-                filename.length() - currentExtension.length());
+    public static CloudCoin fromCsv(String csv, String filename) {
+        CloudCoin coin = new CloudCoin(filename);
+
+        coin.currentExtension = filename.substring(filename.lastIndexOf('.'));
+        coin.currentFilename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1,
+                filename.length() - coin.currentExtension.length());
 
         try {
             String[] values = csv.split(",");
 
-            sn = Integer.parseInt(values[0]);
-            nn = Integer.parseInt(values[1]);
-            an = new ArrayList<>();
+            coin.sn = Integer.parseInt(values[0]);
+            coin.nn = Integer.parseInt(values[1]);
+            coin.an = new ArrayList<>();
             for (int i = 0; i < Config.NodeCount; i++) {
-                an.add(values[i + 3]);
+                coin.an.add(values[i + 3]);
             }
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
         }
-    }
 
-    /**
-     * CloudCoin Constructor for importing new coins from a JSON-encoded file.
-     *
-     * @param filename Filename
-     * @param nn Network Number
-     * @param sn Serial Number
-     * @param an Authenticity Numbers
-     * @param ed Expiration Date
-     * @param pown Pown Results
-     * @param aoid Array Of Idiosyncratic Data
-     */
-    public CloudCoin(String filename, int nn, int sn, ArrayList<String> an, String ed, String pown, ArrayList<String> aoid) {
-        currentExtension = filename.substring(filename.lastIndexOf('.'));
-        currentFilename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1,
-                filename.length() - currentExtension.length());
-
-        this.nn = nn;
-        this.sn = sn;
-        this.an = an;
-        this.ed = ed;
-        this.pown = pown;
-        this.aoid = aoid;
+        return coin;
     }
 
     @Override
@@ -94,6 +100,7 @@ public class CloudCoin {
         StringBuilder builder = new StringBuilder();
         builder.append("cloudcoin: (nn:").append(nn).append(", sn:").append(sn);
         if (null != ed) builder.append(", ed:").append(ed);
+        if (null != pown) builder.append(", pown:").append(pown);
         if (null != aoid) builder.append(", aoid:").append(aoid.toString());
         if (null != an) builder.append(", an:").append(an.toString());
 
@@ -108,5 +115,11 @@ public class CloudCoin {
 
     public void setSn(int sn) {
         this.sn = sn;
+    }
+
+    public void setFilename(String filename) {
+        currentExtension = filename.substring(filename.lastIndexOf('.'));
+        currentFilename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1,
+                filename.length() - currentExtension.length());
     }
 }

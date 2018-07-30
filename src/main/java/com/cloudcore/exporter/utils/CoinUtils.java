@@ -4,6 +4,9 @@ import com.cloudcore.exporter.core.CloudCoin;
 import com.cloudcore.exporter.core.Config;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalField;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -15,7 +18,7 @@ public class CoinUtils {
     }
     public static String calcExpirationDate() {
         LocalDate expirationDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
-        return (expirationDate.getMonth() + "-" + expirationDate.getYear());
+        return (expirationDate.getMonthValue() + "-" + expirationDate.getYear());
     }
 
     public static String toCSV(CloudCoin coin) {
@@ -77,7 +80,7 @@ public class CoinUtils {
      * @param coin the CloudCoin containing the pown results.
      * @return a hex representation of the pown results.
      */
-    public static String pownToHex(CloudCoin coin) {
+    public static String pownStringToHex(CloudCoin coin) {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (int i = 0, j = coin.pown.length(); i < j; i++) {
@@ -101,14 +104,52 @@ public class CoinUtils {
     }
 
     /**
+     * Converts a hexadecimal pown value to String.
+     *
+     * @param hexString the hexadecimal pown String.
+     * @return the pown String.
+     */
+    public static String pownHexToString(String hexString) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = 0, j = hexString.length(); i < j; i++) {
+            if ('0' == hexString.charAt(i))
+                stringBuilder.append('p');
+            else if ('1' == hexString.charAt(i))
+                stringBuilder.append('9');
+            else if ('2' == hexString.charAt(i))
+                stringBuilder.append('n');
+            else if ('E' == hexString.charAt(i))
+                stringBuilder.append('e');
+            else if ('F' == hexString.charAt(i))
+                stringBuilder.append('f');
+        }
+
+        return stringBuilder.toString();
+    }
+
+    /**
      * Returns a String containing a hex representation of a new expiration date, measured in months since August 2016.
      *
      * @return a hex representation of the expiration date.
      */
-    public static String expirationDateToHex() {
+    public static String expirationDateStringToHex() {
         LocalDate zeroDate = LocalDate.of(2016, 8, 13);
         LocalDate expirationDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
         int monthsAfterZero = (int) (DAYS.between(zeroDate, expirationDate) / (365.25 / 12));
         return Integer.toHexString(monthsAfterZero);
+    }
+
+    /**
+     * Converts a hexadecimal expiration date to String.
+     *
+     * @param edHex the hexadecimal expiration date.
+     * @return the expiration date String.
+     */
+    public static String expirationDateHexToString(String edHex) {
+        long monthsAfterZero = Long.valueOf(edHex, 16);
+        LocalDate zeroDate = LocalDate.of(2016, 8, 13);
+        LocalDate ed = zeroDate.plusMonths(monthsAfterZero);
+        return ed.getMonthValue() + "-" + ed.getYear();
     }
 }

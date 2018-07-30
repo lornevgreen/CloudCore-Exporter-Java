@@ -26,40 +26,41 @@ public abstract class IFileSystem {
 
     public String LogsFolder;
 
-    public static ArrayList<CloudCoin> frackedCoins;
     public static ArrayList<CloudCoin> bankCoins;
+    public static ArrayList<CloudCoin> frackedCoins;
 
     public ArrayList<CloudCoin> LoadFolderCoins(String folder) {
         ArrayList<CloudCoin> folderCoins = new ArrayList<>();
 
         String[] fileNames = FileUtils.selectFileNamesInFolder(folder);
         String extension;
-        for (String fileName : fileNames) {
+        for (int i = 0, fileNamesLength = fileNames.length; i < fileNamesLength; i++) {
+            String fileName = fileNames[i];
             int index = fileName.lastIndexOf('.');
             if (index > 0) {
                 extension = fileName.substring(index + 1);
-                fileName = folder + fileName;
+                String filepath = folder + fileName;
 
                 switch (extension) {
                     case "celeb":
                     case "celebrium":
                     case "stack":
-                        ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromJSON(fileName);
+                        ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromJSON(filepath);
                         if (coins != null)
                             folderCoins.addAll(coins);
                         break;
                     case "jpg":
                     case "jpeg":
-                        CloudCoin coin = importJPEG(fileName);
+                        CloudCoin coin = importJPEG(filepath);
                         folderCoins.add(coin);
                         break;
                     case "csv":
                         ArrayList<String> lines;
                         try {
                             ArrayList<CloudCoin> csvCoins = new ArrayList<>();
-                            lines = new ArrayList<>(Files.readAllLines(Paths.get(fileName)));
+                            lines = new ArrayList<>(Files.readAllLines(Paths.get(filepath)));
                             for (String line : lines) {
-                                csvCoins.add(new CloudCoin(line));
+                                csvCoins.add(new CloudCoin(line, fileName));
                             }
                             csvCoins.remove(null);
                             folderCoins.addAll(csvCoins);
@@ -164,27 +165,29 @@ public abstract class IFileSystem {
         }
     }
 
-    public void WriteCoinsToFile(ArrayList<CloudCoin> coins, String fileName, String extension) {
+    public void WriteCoinsToStack(ArrayList<CloudCoin> coins, String fileName) {
         Gson gson = Utils.createGson();
         try {
             Stack stack = new Stack(coins.toArray(new CloudCoin[0]));
-            Files.write(Paths.get(fileName + extension), gson.toJson(stack).getBytes());
+            Files.write(Paths.get(fileName + ".stack"), gson.toJson(stack).getBytes());
         } catch (IOException e) {
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
         }
     }
 
-    public void WriteCoinToFile(CloudCoin coin, String filename) {
+    public void WriteCoinToStack(CloudCoin coin, String filename) {
         Stack stack = new Stack(coin);
         try {
-            Files.write(Paths.get(filename), Utils.createGson().toJson(stack).getBytes(StandardCharsets.UTF_8));
+            Files.write(Paths.get(filename + ".stack"), Utils.createGson().toJson(stack).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public abstract boolean WriteCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String OutputFile);
+
+    public abstract boolean WriteCoinToCsv(ArrayList<CloudCoin> exportCoins, String filename);
 
     public String GetCoinTemplate(CloudCoin cloudCoin) {
         int denomination = CoinUtils.getDenomination(cloudCoin);

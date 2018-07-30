@@ -9,10 +9,29 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class FileUtils {
+
+
+    /**
+     * Appends a filename with an increasing index if a filename is in use.
+     * Loops until a free filename is found.
+     * TODO: Potential endless loop if every filename is taken.
+     *
+     * @param filename
+     * @return an unused filename
+     */
+    public static String ensureFilenameUnique(String filename, String extension) {
+        String newFilename = filename;
+        int loopCount = 0;
+        while (Files.exists(Paths.get(newFilename + extension)))
+            newFilename = filename + ++loopCount;
+        return newFilename;
+    }
 
     /**
      * Attempts to read a JSON Object from a file.
@@ -69,10 +88,17 @@ public class FileUtils {
                 String aoidKey = (childJSONObject.has("aoid"))? "aoid" : "aoidText";
                 ArrayList<String> aoid = toStringArrayList(childJSONObject.getJSONArray(aoidKey));
 
-                String extension = fileName.substring(fileName.lastIndexOf('.'));
-                String currentFilename = fileName.substring(fileName.lastIndexOf(File.separatorChar) + 1,
-                        fileName.length() - extension.length());
-                cloudCoins.add(new CloudCoin(currentFilename, extension, nn, sn, ans, ed, pown, aoid));
+                // Invalid Serial Number
+                if (sn < 1 || sn > 16777216)
+                    continue;
+
+                // Correct null/missing values
+                if (ed == null || ed.length() == 0)
+                    ed = CoinUtils.calcExpirationDate();
+                if (pown == null || pown.length() == 0)
+                    pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
+
+                cloudCoins.add(new CloudCoin(fileName, nn, sn, ans, ed, pown, aoid));
             }
         } catch (JSONException e){
             System.out.println("JSON File " + fileName + " was not imported. " + e.getLocalizedMessage());
@@ -90,7 +116,7 @@ public class FileUtils {
      */
     public static String[] selectFileNamesInFolder(String directoryPath) {
         File dir = new File(directoryPath);
-        Collection<String> files = new ArrayList<String>();
+        Collection<String> files = new ArrayList<>();
         if (dir.isDirectory()) {
             File[] listFiles = dir.listFiles();
 
@@ -111,7 +137,7 @@ public class FileUtils {
      */
     public static ArrayList<String> toStringArrayList(JSONArray jsonArray) {
         if (jsonArray == null)
-            return null;
+            return new ArrayList<>();
 
         ArrayList<String> arr = new ArrayList<>(jsonArray.length());
         for (int i = 0; i < jsonArray.length(); i++)

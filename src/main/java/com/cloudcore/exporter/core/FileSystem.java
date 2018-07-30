@@ -8,8 +8,10 @@ import javax.xml.bind.DatatypeConverter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class FileSystem extends IFileSystem {
 
@@ -45,13 +47,10 @@ public class FileSystem extends IFileSystem {
             return false;
         }
 
-
         return true;
     }
 
     public void LoadFileSystem() {
-
-
         bankCoins = LoadFolderCoins(BankFolder);
         frackedCoins = LoadFolderCoins(FrackedFolder);
     }
@@ -111,9 +110,43 @@ public class FileSystem extends IFileSystem {
             System.arraycopy(ccArray, 0, outputBytes, 4, ccArray.length);
             System.arraycopy(imageBytes, 4, outputBytes, 4 + ccArray.length, imageBytes.length - 4);
 
-            Files.write(Paths.get(OutputFile), outputBytes);
+            Files.write(Paths.get(OutputFile + ".jpg"), outputBytes);
             //System.out.println("Writing to " + fileName);
             //CoreLogger.Log("Writing to " + fileName);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean WriteCoinToCsv(ArrayList<CloudCoin> exportCoins, String filename) {
+        StringBuilder csv = new StringBuilder();
+        StringBuilder header = new StringBuilder();
+        String headerLine = "sn,denomination,nn,";
+
+        // Write the ANs to the Header
+        for (int i = 0; i < Config.NodeCount; i++)
+            header.append("an").append((i + 1)).append(",");
+
+        // Write the Header Record
+        csv.append(headerLine).append(header.toString()).append(System.lineSeparator());
+
+        // Write the Coin Serial Numbers
+        for (CloudCoin coin : exportCoins) {
+            csv.append(coin.getSn()).append(',');
+            csv.append(CoinUtils.getDenomination(coin)).append(',');
+            csv.append(coin.nn).append(',');
+
+            for (int i = 0; i < Config.NodeCount; i++)
+                csv.append(coin.an.get(i)).append(",");
+            csv.append(System.lineSeparator());
+        }
+
+        // Write the file
+        try {
+            Files.write(Paths.get(filename + ".csv"), csv.toString().getBytes(StandardCharsets.UTF_8));
             return true;
         } catch (IOException e) {
             e.printStackTrace();

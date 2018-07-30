@@ -2,15 +2,11 @@ package com.cloudcore.exporter;
 
 import com.cloudcore.exporter.core.*;
 import com.cloudcore.exporter.utils.CoinUtils;
+import com.cloudcore.exporter.utils.FileUtils;
 import com.cloudcore.exporter.utils.SimpleLogger;
 import com.cloudcore.exporter.utils.Utils;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
 
 public class Exporter {
@@ -86,19 +82,18 @@ public class Exporter {
         Scanner reader = new Scanner(System.in);
         String stackType = "1";
 
-        System.out.println("Do you want to export your CloudCoin to (1)jpgs, (2) stack (JSON), or (3) CSV file?");
+        // Ask for export type.
+        System.out.println("Do you want to export your CloudCoin to (1) stack (JSON), (2) jpgs, or (3) CSV file?");
         String fileType = reader.next();
-        if ("2".equals(fileType)) {
+
+        // Ask for export subtype for stacks.
+        if ("1".equals(fileType)) {
             System.out.println("Export All Coins to Single Stack (1) or One Stack per coin (2)?");
             stackType = reader.next();
         }
 
-        int exp_1 = 0;
-        int exp_5 = 0;
-        int exp_25 = 0;
-        int exp_100 = 0;
-        int exp_250 = 0;
-
+        // Ask for amounts to export.
+        int exp_1 = 0, exp_5 = 0, exp_25 = 0, exp_100 = 0, exp_250 = 0;
         if (onesTotalCount > 0) {
             System.out.println("How many 1s do you want to export?");
             exp_1 = Math.min(Utils.tryParseInteger(reader.next()), onesTotalCount);
@@ -120,6 +115,7 @@ public class Exporter {
             exp_250 = Math.min(Utils.tryParseInteger(reader.next()), twoFiftiesTotalCount);
         }
 
+        // Ask for an optional tag to be appended in the filename.
         System.out.println("What tag will you add to the file name?");
         String tag = null;
         while (reader.hasNextLine()) {
@@ -134,11 +130,12 @@ public class Exporter {
             }
         }
 
+        // Get the CloudCoins that will be used for the export.
         int totalSaved = exp_1 + (exp_5 * 5) + (exp_25 * 25) + (exp_100 * 100) + (exp_250 * 250);
         ArrayList<CloudCoin> totalCoins = IFileSystem.bankCoins;
         totalCoins.addAll(IFileSystem.frackedCoins);
 
-        ArrayList<CloudCoin> onesToExport = new ArrayList<>();
+        ArrayList<CloudCoin> exportCoins = new ArrayList<>();
         ArrayList<CloudCoin> fivesToExport = new ArrayList<>();
         ArrayList<CloudCoin> qtrToExport = new ArrayList<>();
         ArrayList<CloudCoin> hundredsToExport = new ArrayList<>();
@@ -147,9 +144,8 @@ public class Exporter {
         for (int i = 0, totalCoinsSize = totalCoins.size(); i < totalCoinsSize; i++) {
             CloudCoin coin = totalCoins.get(i);
             int denomination = CoinUtils.getDenomination(coin);
-
             if (denomination == 1) {
-                if (exp_1-- > 0) onesToExport.add(coin);
+                if (exp_1-- > 0) exportCoins.add(coin);
                 else exp_1 = 0;
             } else if (denomination == 5) {
                 if (exp_5-- > 0) fivesToExport.add(coin);
@@ -165,106 +161,57 @@ public class Exporter {
                 else exp_250 = 0;
             }
         }
-
-        ArrayList<CloudCoin> exportCoins = onesToExport;
         exportCoins.addAll(fivesToExport);
         exportCoins.addAll(qtrToExport);
         exportCoins.addAll(hundredsToExport);
         exportCoins.addAll(twoFiftiesToExport);
 
-        String filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag + "");
-        if (Files.exists(Paths.get(filename))) // tack on a random number if a file already exists with the same tag
-        {
-            Random rnd = new Random();
-            int tagrand = rnd.nextInt(999);
-            filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag + tagrand + "");
-            // TODO: ACTUALLY RENAME THE FILE
-        }
-
-        // Export Coins as jpeg Images
-        if ("1".equals(fileType)) {
-            for (CloudCoin coin : exportCoins) {
-                String OutputFile = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag + ".jpg";
-                boolean fileGenerated = fileSystem.WriteCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), OutputFile);
-                if (fileGenerated)
-                    updateLog("CloudCoin exported as Jpeg to " + OutputFile);
-            }
-
-            //fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-            //fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
-        }
+        String filename;
 
         // Export Coins as Stack
-        else if ("2".equals(fileType)) {
+        if ("1".equals(fileType)) {
             if ("1".equals(stackType)) { // Single Stack, or individual Stacks
-                fileSystem.WriteCoinsToFile(exportCoins, filename, ".stack");
-                fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-                fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
+                filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
+                filename = FileUtils.ensureFilenameUnique(filename, ".stack");
+                fileSystem.WriteCoinsToStack(exportCoins, filename);
             } else {
                 for (CloudCoin coin : exportCoins) {
-                    System.out.print("filename: " + CoinUtils.getFilename(coin));
-                    String OutputFile = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag + ".stack";
-                    fileSystem.WriteCoinToFile(coin, OutputFile);
-                    fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-                    fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
+                    filename = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag;
+                    filename = FileUtils.ensureFilenameUnique(filename, ".stack");
+                    fileSystem.WriteCoinToStack(coin, filename);
 
-                    updateLog("CloudCoin exported as Stack to " + OutputFile);
+                    updateLog("CloudCoin exported as Stack to " + filename);
                 }
+            }
+        }
+
+        // Export Coins as jpg Images
+        else if ("2".equals(fileType)) {
+            for (CloudCoin coin : exportCoins) {
+                filename = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag;
+                filename = FileUtils.ensureFilenameUnique(filename, ".jpg");
+                boolean fileGenerated = fileSystem.WriteCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), filename);
+                if (fileGenerated)
+                    updateLog("CloudCoin exported as Jpg to " + filename);
             }
         }
 
         // Export Coins as CSV
         else if ("3".equals(fileType)) {
-            filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag + ".csv");
-            if (Files.exists(Paths.get(filename))) {
-                // tack on a random number if a file already exists with the same tag
-                Random rnd = new Random();
-                int tagrand = rnd.nextInt(999);
-                filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag + tagrand + "");
-            }
-
-            StringBuilder csv = new StringBuilder();
-            StringBuilder header = new StringBuilder();
-            String headerLine = "sn,denomination,nn,";
-
-            for (int i = 0; i < Config.NodeCount; i++) {
-                header.append("an").append((i + 1)).append(",");
-            }
-
-            // Write the Header Record
-            csv.append(headerLine).append(header.toString()).append(System.lineSeparator());
-
-            // Write the Coin Serial Numbers
-            for (CloudCoin coin : exportCoins) {
-                StringBuilder anString = new StringBuilder();
-                for (int i = 0; i < Config.NodeCount; i++) {
-                    anString.append(coin.an.get(i)).append(",");
-                }
-                String newLine = String.format("{0},{1},{2},{3}", coin.getSn(), CoinUtils.getDenomination(coin), coin.nn, anString.toString());
-                csv.append(newLine).append(System.lineSeparator());
-            }
-            try {
-                Files.write(Paths.get(filename), csv.toString().getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            //fileSystem.WriteCoinsToFile(exportCoins, filename, ".s");
-            fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
-            fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
+            filename = fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag;
+            filename = FileUtils.ensureFilenameUnique(filename, ".csv");
+            boolean fileGenerated = fileSystem.WriteCoinToCsv(exportCoins, filename);
+            if (fileGenerated)
+                updateLog("CloudCoin exported as Jpg to " + filename);
         }
+
+        // Remove exported coins
+        fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
+        fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
     }
 
     public void updateLog(String message) {
         System.out.println(message);
         logger.Info(message);
     }
-
-
-    /* PRIVATE METHODS */
-
-
-    /* PRIVATE METHODS */
-
 }

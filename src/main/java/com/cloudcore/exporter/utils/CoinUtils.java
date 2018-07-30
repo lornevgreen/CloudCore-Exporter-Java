@@ -11,8 +11,11 @@ public class CoinUtils {
 
 
     public static void calcExpirationDate(CloudCoin coin) {
-        LocalDate expirationnnnDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
-        coin.ed = (expirationnnnDate.getMonth() + "-" + expirationnnnDate.getYear());
+        coin.ed = calcExpirationDate();
+    }
+    public static String calcExpirationDate() {
+        LocalDate expirationDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
+        return (expirationDate.getMonth() + "-" + expirationDate.getYear());
     }
 
     public static String toCSV(CloudCoin coin) {
@@ -106,7 +109,6 @@ public class CoinUtils {
         LocalDate zeroDate = LocalDate.of(2016, 8, 13);
         LocalDate expirationDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
         int monthsAfterZero = (int) (DAYS.between(zeroDate, expirationDate) / (365.25 / 12));
-        System.out.println("expiration months: " + monthsAfterZero);
         return Integer.toHexString(monthsAfterZero);
     }
 }

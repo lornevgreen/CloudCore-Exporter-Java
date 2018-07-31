@@ -83,8 +83,8 @@ public class Exporter {
         int stackType = 1;
 
         // Ask for export type.
-        System.out.println("Do you want to export your CloudCoin to (1) stack (JSON), (2) jpgs, or (3) CSV file?");
-        int fileType = reader.nextInt();
+        System.out.println("Do you want to export your CloudCoin to (1) stack (JSON), (2) JPG files, or (3) CSV files?");
+        int fileType = reader.hasNextInt() ? reader.nextInt() : -1;
         if (fileType < 0 || 3 < fileType) {
             System.out.println("Invalid option. No CloudCoins were exported. Exiting...");
             return;
@@ -93,7 +93,7 @@ public class Exporter {
         // Ask for export subtype for stacks.
         if (1 == fileType) {
             System.out.println("Export All Coins to Single Stack (1) or One Stack per coin (2)?");
-            stackType = reader.nextInt();
+            stackType = reader.hasNextInt() ? reader.nextInt() : -1;
             if (!(stackType == 1 || stackType == 2)) {
                 System.out.println("Invalid option. No CloudCoins were exported. Exiting...");
                 return;
@@ -101,32 +101,52 @@ public class Exporter {
         }
 
         // Ask for amounts to export.
-        int exp_1 = 0;
-        int exp_5 = 0, exp_25 = 0, exp_100 = 0, exp_250 = 0;
+        int exp_1 = 0, exp_5 = 0, exp_25 = 0, exp_100 = 0, exp_250 = 0;
+        boolean fail;
         if (onesTotalCount > 0) {
-            System.out.println("How many 1s do you want to export?");
-            exp_1 = Math.min(reader.nextInt(), onesTotalCount);
-            exp_1 = Math.max(0, exp_1);
+            System.out.println("How many 1s do you want to export? Available: " + onesTotalCount);
+            exp_1 = reader.hasNextInt() ? reader.nextInt() : -1;
+            if (exp_1 < 0 || exp_1 > onesTotalCount) {
+                System.out.println("Cannot export " + exp_1 + " CloudCoins from a pool of " + onesTotalCount + " CloudCoins. Exiting...");
+                return;
+            }
         }
         if (fivesTotalCount > 0) {
-            System.out.println("How many 5s do you want to export?");
-            exp_5 = Math.min(reader.nextInt(), fivesTotalCount);
-            exp_5 = Math.max(0, exp_5);
+            System.out.println("How many 5s do you want to export? Available: " + fivesTotalCount);
+            exp_5 = reader.hasNextInt() ? reader.nextInt() : -1;
+            if (exp_5 < 0 || exp_5 > onesTotalCount) {
+                System.out.println("Cannot export " + exp_5 + " CloudCoins from a pool of " + fivesTotalCount + " CloudCoins. Exiting...");
+                return;
+            }
         }
         if ((qtrTotalCount > 0)) {
-            System.out.println("How many 25s do you want to export?");
-            exp_25 = Math.min(reader.nextInt(), qtrTotalCount);
-            exp_25 = Math.max(0, exp_25);
+            System.out.println("How many 25s do you want to export? Available: " + qtrTotalCount);
+            exp_25 = reader.hasNextInt() ? reader.nextInt() : -1;
+            if (exp_25 < 0 || exp_25 > qtrTotalCount) {
+                System.out.println("Cannot export " + exp_25 + " CloudCoins from a pool of " + qtrTotalCount + " CloudCoins. Exiting...");
+                return;
+            }
         }
         if (hundredsTotalCount > 0) {
-            System.out.println("How many 100s do you want to export?");
-            exp_100 = Math.min(reader.nextInt(), hundredsTotalCount);
-            exp_25 = Math.max(0, exp_25);
+            System.out.println("How many 100s do you want to export? Available: " + hundredsTotalCount);
+            exp_100 = reader.hasNextInt() ? reader.nextInt() : -1;
+            if (exp_100 < 0 || exp_100 > hundredsTotalCount) {
+                System.out.println("Cannot export " + exp_100 + " CloudCoins from a pool of " + hundredsTotalCount + " CloudCoins. Exiting...");
+                return;
+            }
         }
         if (twoFiftiesTotalCount > 0) {
-            System.out.println("How many 250s do you want to export?");
-            exp_250 = Math.min(reader.nextInt(), twoFiftiesTotalCount);
-            exp_25 = Math.max(0, exp_25);
+            System.out.println("How many 250s do you want to export? Available: " + twoFiftiesTotalCount);
+            exp_250 = reader.hasNextInt() ? reader.nextInt() : -1;
+            if (exp_250 < 0 || exp_250 > twoFiftiesTotalCount) {
+                System.out.println("Cannot export " + exp_250 + " CloudCoins from a pool of " + twoFiftiesTotalCount + " CloudCoins. Exiting...");
+                return;
+            }
+        }
+
+        if (exp_1 == 0 && exp_5 == 0 && exp_25 == 0 && exp_100 == 0 && exp_250 == 0) {
+            System.out.println("Exporting 0 CloudCoins. Done. Exiting...");
+            return;
         }
 
         // Ask for an optional tag to be appended in the filename.
@@ -149,7 +169,7 @@ public class Exporter {
         ArrayList<CloudCoin> totalCoins = IFileSystem.bankCoins;
         totalCoins.addAll(IFileSystem.frackedCoins);
 
-        ArrayList<CloudCoin> exportCoins = new ArrayList<>();
+        ArrayList<CloudCoin> onesToExport = new ArrayList<>();
         ArrayList<CloudCoin> fivesToExport = new ArrayList<>();
         ArrayList<CloudCoin> qtrToExport = new ArrayList<>();
         ArrayList<CloudCoin> hundredsToExport = new ArrayList<>();
@@ -159,7 +179,7 @@ public class Exporter {
             CloudCoin coin = totalCoins.get(i);
             int denomination = CoinUtils.getDenomination(coin);
             if (denomination == 1) {
-                if (exp_1-- > 0) exportCoins.add(coin);
+                if (exp_1-- > 0) onesToExport.add(coin);
                 else exp_1 = 0;
             } else if (denomination == 5) {
                 if (exp_5-- > 0) fivesToExport.add(coin);
@@ -175,6 +195,15 @@ public class Exporter {
                 else exp_250 = 0;
             }
         }
+
+        if (onesToExport.size() < exp_1 || fivesToExport.size() < exp_5 || qtrToExport.size() < exp_25
+                || hundredsToExport.size() < exp_100 || twoFiftiesToExport.size() < exp_250) {
+            System.out.println("Not enough CloudCoins for export. No CloudCoins were exported. Exiting...");
+            return;
+        }
+
+        ArrayList<CloudCoin> exportCoins = new ArrayList<>();
+        exportCoins.addAll(onesToExport);
         exportCoins.addAll(fivesToExport);
         exportCoins.addAll(qtrToExport);
         exportCoins.addAll(hundredsToExport);
@@ -188,13 +217,14 @@ public class Exporter {
                 filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
                 filename = FileUtils.ensureFilenameUnique(filename, ".stack");
                 fileSystem.WriteCoinsToStack(exportCoins, filename);
+                updateLog("CloudCoins exported as single Stack to " + filename + ".stack");
             } else {
                 for (CloudCoin coin : exportCoins) {
                     filename = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag;
                     filename = FileUtils.ensureFilenameUnique(filename, ".stack");
                     fileSystem.WriteCoinToStack(coin, filename);
 
-                    updateLog("CloudCoin exported as Stack to " + filename);
+                    updateLog("CloudCoin exported as Stack to " + filename + ".stack");
                 }
             }
         }
@@ -206,7 +236,7 @@ public class Exporter {
                 filename = FileUtils.ensureFilenameUnique(filename, ".jpg");
                 boolean fileGenerated = fileSystem.WriteCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), filename);
                 if (fileGenerated)
-                    updateLog("CloudCoin exported as Jpg to " + filename);
+                    updateLog("CloudCoin exported as JPG to " + filename + ".jpg");
             }
         }
 
@@ -216,7 +246,7 @@ public class Exporter {
             filename = FileUtils.ensureFilenameUnique(filename, ".csv");
             boolean fileGenerated = fileSystem.WriteCoinToCsv(exportCoins, filename);
             if (fileGenerated)
-                updateLog("CloudCoin exported as Jpg to " + filename);
+                updateLog("CloudCoin exported as CSV to " + filename + ".csv");
         }
 
         // Remove exported coins

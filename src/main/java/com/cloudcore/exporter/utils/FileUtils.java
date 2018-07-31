@@ -25,10 +25,16 @@ public class FileUtils {
      * @return an unused filename
      */
     public static String ensureFilenameUnique(String filename, String extension) {
-        String newFilename = filename;
+        if (!Files.exists(Paths.get(filename + extension)))
+            return filename;
+
+        filename = filename + '.';
+        String newFilename;
         int loopCount = 0;
-        while (Files.exists(Paths.get(newFilename + extension)))
-            newFilename = filename + ++loopCount;
+        do {
+            newFilename = filename + Integer.toString(++loopCount);
+        }
+        while (Files.exists(Paths.get(newFilename + extension)));
         return newFilename;
     }
 
@@ -54,7 +60,7 @@ public class FileUtils {
             try {
                 if (br != null)
                     br.close();
-            } catch (IOException e){
+            } catch (IOException e) {
                 //e.printStackTrace();
             }
         }

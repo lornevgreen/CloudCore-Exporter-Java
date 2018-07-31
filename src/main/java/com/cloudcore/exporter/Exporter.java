@@ -90,8 +90,6 @@ public class Exporter {
             return;
         }
 
-        int crash = reader.nextInt();
-
         // Ask for export subtype for stacks.
         if (1 == fileType) {
             System.out.println("Export All Coins to Single Stack (1) or One Stack per coin (2)?");

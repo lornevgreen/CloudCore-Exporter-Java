@@ -23,8 +23,11 @@ public class Main {
             exporter.ExportCoins();
         } catch (Exception e) {
             System.out.println("Uncaught exception - " + e.getLocalizedMessage());
+            logger.appendLog(e.toString(), e.getStackTrace());
             e.printStackTrace();
         }
+
+        logger.writeLogToFile();
     }
 
     private static void setup() {

@@ -16,6 +16,8 @@ public class SimpleLogger {
     private DateTimeFormatter DatetimeFormat;
     private String Filename;
 
+    private StringBuilder logsRecord;
+
     /// <summary>
     /// Initialize a new instance of SimpleLogger class.
     /// Log file will be created automatically if not yet exists, else it can be either a fresh new file or append to the existing file.
@@ -30,17 +32,22 @@ public class SimpleLogger {
 
     private void initialize(String FileName, boolean append) {
         DatetimeFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+        logsRecord = new StringBuilder();
         this.Filename = FileName;
-
-        String logHeader = Filename + " is created.";
-        if (!Files.exists(Paths.get(Filename))) {
-            WriteFormattedLog(INFO, logHeader);
-        } else {
-            if (!append)
-                WriteFormattedLog(INFO, logHeader);
-        }
     }
 
+    public void appendLog(String text) {
+        logsRecord.append(text).append(System.lineSeparator());
+    }
+    public void appendLog(String message, StackTraceElement[] stackTraceElements) {
+        logsRecord.append(message).append(System.lineSeparator());
+        for (StackTraceElement stack : stackTraceElements)
+            logsRecord.append("    at ").append(stack.toString()).append(System.lineSeparator());
+    }
+
+    public void writeLogToFile() {
+        WriteFormattedLog(INFO, logsRecord.toString());
+    }
 
     /// <summary>
     /// Log an info message

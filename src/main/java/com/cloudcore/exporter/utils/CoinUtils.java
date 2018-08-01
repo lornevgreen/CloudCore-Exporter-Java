@@ -20,15 +20,6 @@ public class CoinUtils {
         return (expirationDate.getMonthValue() + "-" + expirationDate.getYear());
     }
 
-    public static String toCSV(CloudCoin coin) {
-        StringBuilder csv = new StringBuilder(coin.getSn() + "," + coin.nn + ",");
-
-        for (int i = 0; i < Config.NodeCount; i++)
-            csv.append(coin.an.get(i)).append(",");
-
-        return csv.substring(0, csv.length() - 1);
-    }
-
     /**
      * Returns a denomination describing the currency value of the CloudCoin.
      *
@@ -57,13 +48,13 @@ public class CoinUtils {
     }
 
     /**
-     * Generates a String filename for the CloudCoin based on the denomination, Network Number, and Serial Number.
+     * Generates a name for the CloudCoin based on the denomination, Network Number, and Serial Number.
      * <br>
      * <br>Example: 25.1.6123456
      *
      * @return String a filename
      */
-    public static String getFilename(CloudCoin coin) {
+    public static String generateFilename(CloudCoin coin) {
         return CoinUtils.getDenomination(coin) + ".CloudCoin." + coin.nn + "." + coin.getSn();
     }
 

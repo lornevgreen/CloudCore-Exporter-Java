@@ -52,7 +52,7 @@ public class CloudCoin {
     /* Methods */
 
     /**
-     * CloudCoin Constructor for importing a CloudCoin from a CSV file. (Comma-Separated Values)
+     * CloudCoin Constructor for importing a CloudCoin from a JPG file.
      *
      * @param header       JPG header string.
      * @param fullFilePath the absolute filepath of the CloudCoin.
@@ -78,7 +78,7 @@ public class CloudCoin {
     }
 
     /**
-     * CloudCoin Constructor for importing a CloudCoin from a CSV file. (Comma-Separated Values)
+     * CloudCoin Constructor for importing a CloudCoin from a CSV file.
      *
      * @param csv          CSV file as a String.
      * @param fullFilePath the absolute filepath of the CloudCoin.
@@ -91,7 +91,8 @@ public class CloudCoin {
             String[] values = csv.split(",");
 
             coin.sn = Integer.parseInt(values[0]);
-            coin.nn = Integer.parseInt(values[1]);
+            // values[1] is denomination.
+            coin.nn = Integer.parseInt(values[2]);
             coin.an = new ArrayList<>();
             for (int i = 0; i < Config.NodeCount; i++)
                 coin.an.add(values[i + 3]);

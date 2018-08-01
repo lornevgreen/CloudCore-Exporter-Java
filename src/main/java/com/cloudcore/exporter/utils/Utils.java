@@ -28,25 +28,6 @@ public class Utils {
                 .create();
     }
 
-    public static StringBuilder coinsToCSV(ArrayList<CloudCoin> coins) {
-        StringBuilder csv = new StringBuilder();
-
-        String headerLine = String.format("sn,denomination,nn,");
-        String headeranString = "";
-        for (int i = 0; i < Config.NodeCount; i++) {
-            headeranString += "an" + (i + 1) + ",";
-        }
-
-        // Write the Header Record
-        csv.append(headerLine + headeranString + System.lineSeparator());
-
-        // Write the Coin Serial Numbers
-        for (CloudCoin coin : coins) {
-            csv.append(CoinUtils.toCSV(coin) + System.lineSeparator());
-        }
-        return csv;
-    }
-
     /**
      * Pads a String with characters appended in the beginning.
      * This is primarily used to pad 0's to hexadecimal Strings.

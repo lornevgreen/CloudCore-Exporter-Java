@@ -209,13 +209,13 @@ public abstract class IFileSystem {
     public abstract boolean writeCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String filePath);
 
     /**
-     * Writes a CloudCoin object to a CSV file.
+     * Writes an array of CloudCoin objects to a CSV file.
      *
      * @param cloudCoins the ArrayList of CloudCoin objects.
      * @param filePath   the absolute filepath of the new CloudCoin-embedded JPG, without the extension.
      * @return true if the file was saved to the location provided, otherwise false.
      */
-    public abstract boolean writeCoinToCsv(ArrayList<CloudCoin> cloudCoins, String filePath);
+    public abstract boolean writeCoinsToCsv(ArrayList<CloudCoin> cloudCoins, String filePath);
 
     /**
      * Returns the full file path for a JPG image template.
@@ -252,12 +252,12 @@ public abstract class IFileSystem {
         final String quote = "\"";
         final String tab = "\t";
         String wholeJson = "{" + System.lineSeparator(); //{
-        String filename = CoinUtils.getFilename(cc);
+        String filename = CoinUtils.generateFilename(cc);
 
         String json = this.setJSON(cc);
 
         try {
-            if (!Files.exists(Paths.get(folder + CoinUtils.getFilename(cc) + ".stack"))) {
+            if (!Files.exists(Paths.get(folder + CoinUtils.generateFilename(cc) + ".stack"))) {
                 wholeJson += tab + quote + "cloudcoin" + quote + ": [" + System.lineSeparator(); // "cloudcoin" : [
                 wholeJson += json;
                 wholeJson += System.lineSeparator() + tab + "]" + System.lineSeparator() + "}";

@@ -124,7 +124,7 @@ public class FileSystem extends IFileSystem {
     }
 
     @Override
-    public boolean writeCoinToCsv(ArrayList<CloudCoin> cloudCoins, String filePath) {
+    public boolean writeCoinsToCsv(ArrayList<CloudCoin> cloudCoins, String filePath) {
         StringBuilder csv = new StringBuilder();
 
         // Header
@@ -139,7 +139,7 @@ public class FileSystem extends IFileSystem {
         for (CloudCoin coin : cloudCoins) {
             // SN
             csv.append(coin.getSn()).append(',');
-            // Amount
+            // Denomination
             csv.append(CoinUtils.getDenomination(coin)).append(',');
             // Network Number
             csv.append(coin.nn).append(',');

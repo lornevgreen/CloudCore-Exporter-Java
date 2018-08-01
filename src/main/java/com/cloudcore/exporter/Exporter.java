@@ -231,13 +231,13 @@ public class Exporter {
             if (1 == stackType) {
                 filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
                 filename = FileUtils.ensureFilenameUnique(filename, ".stack");
-                fileSystem.WriteCoinsToSingleStack(exportCoins, filename);
+                fileSystem.writeCoinsToSingleStack(exportCoins, filename);
                 updateLog("CloudCoins exported as single Stack to " + filename + ".stack");
             } else {
                 for (CloudCoin coin : exportCoins) {
                     filename = fileSystem.ExportFolder + CoinUtils.generateFilename(coin) + tag;
                     filename = FileUtils.ensureFilenameUnique(filename, ".stack");
-                    fileSystem.WriteCoinToIndividualStacks(coin, filename);
+                    fileSystem.writeCoinToIndividualStacks(coin, filename);
 
                     updateLog("CloudCoin exported as Stack to " + filename + ".stack");
                 }
@@ -249,7 +249,7 @@ public class Exporter {
             for (CloudCoin coin : exportCoins) {
                 filename = fileSystem.ExportFolder + CoinUtils.generateFilename(coin) + tag;
                 filename = FileUtils.ensureFilenameUnique(filename, ".jpg");
-                boolean fileGenerated = fileSystem.writeCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), filename);
+                boolean fileGenerated = fileSystem.writeCoinToJpeg(coin, fileSystem.getJpgTemplate(coin), filename);
                 if (fileGenerated)
                     updateLog("CloudCoin exported as JPG to " + filename + ".jpg");
             }

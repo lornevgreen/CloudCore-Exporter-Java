@@ -100,51 +100,12 @@ public abstract class IFileSystem {
             inputStream.close();
 
             String header = bytesToHexString(headerBytes);
-            CloudCoin tempCoin = CloudCoin.fromJpgHeader(header, fullFilePath.substring(fullFilePath.lastIndexOf(File.separatorChar)));
-            writeTo(BankFolder, tempCoin);
-            return tempCoin;
+            return CloudCoin.fromJpgHeader(header, fullFilePath.substring(fullFilePath.lastIndexOf(File.separatorChar)));
         } catch (IOException e) {
             System.out.println("IO Exception:" + fullFilePath + e);
             e.printStackTrace();
             return null;
         }
-    }
-
-    // TODO: Remove manual JSON code.
-    public String setJSON(CloudCoin cc) {
-        final String quote = "\"";
-        final String tab = "\t";
-        String json = (tab + tab + "{ " + System.lineSeparator());// {
-        json += tab + tab + quote + "nn" + quote + ":" + quote + cc.nn + quote + ", " + System.lineSeparator();// "nn":"1",
-        json += tab + tab + quote + "sn" + quote + ":" + quote + cc.getSn() + quote + ", " + System.lineSeparator();// "sn":"367544",
-        json += tab + tab + quote + "an" + quote + ": [" + quote;// "an": ["
-        for (int i = 0; (i < 25); i++) {
-            json += cc.an.get(i);// 8551995a45457754aaaa44
-            if (i == 4 || i == 9 || i == 14 || i == 19) {
-                json += quote + "," + System.lineSeparator() + tab + tab + tab + quote; //",
-            } else if (i == 24) {
-                // json += "\""; last one do nothing
-            } else {
-                json += quote + ", " + quote;
-            }
-
-
-        }
-
-        json += quote + "]," + System.lineSeparator();//"],
-
-        //CoinUtils cu = new CoinUtils(cc);
-        //cu.calcExpirationDate();
-        CoinUtils.calcExpirationDate(cc);
-        json += tab + tab + quote + "ed" + quote + ":" + quote + cc.ed + quote + "," + System.lineSeparator(); // "ed":"9-2016",
-        if (cc.pown == null || cc.pown.length() == 0) {
-            cc.pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
-        }//Set pown to unknow if it is not set.
-        json += tab + tab + quote + "pown" + quote + ":" + quote + cc.pown + quote + "," + System.lineSeparator();// "pown":"uuupppppffpppppfuuf",
-        json += tab + tab + quote + "aoid" + quote + ": []" + System.lineSeparator();
-        json += tab + tab + "}" + System.lineSeparator();
-        // Keep expiration date when saving (not a truley accurate but good enought )
-        return json;
     }
 
     /**
@@ -153,7 +114,7 @@ public abstract class IFileSystem {
      * @param cloudCoins the ArrayList of CloudCoins to delete.
      * @param folder     the folder to delete from.
      */
-    public void RemoveCoins(ArrayList<CloudCoin> cloudCoins, String folder) {
+    public void removeCoins(ArrayList<CloudCoin> cloudCoins, String folder) {
         for (CloudCoin coin : cloudCoins) {
             try {
                 Files.deleteIfExists(Paths.get(folder + coin.getFullFilePath()));
@@ -170,7 +131,7 @@ public abstract class IFileSystem {
      * @param coins    the ArrayList of CloudCoins.
      * @param filePath the absolute filepath of the CloudCoin file, without the extension.
      */
-    public void WriteCoinsToSingleStack(ArrayList<CloudCoin> coins, String filePath) {
+    public void writeCoinsToSingleStack(ArrayList<CloudCoin> coins, String filePath) {
         Gson gson = Utils.createGson();
         try {
             Stack stack = new Stack(coins.toArray(new CloudCoin[0]));
@@ -187,7 +148,7 @@ public abstract class IFileSystem {
      * @param coin     the ArrayList of CloudCoins.
      * @param filePath the absolute filepath of the CloudCoin file, without the extension.
      */
-    public void WriteCoinToIndividualStacks(CloudCoin coin, String filePath) {
+    public void writeCoinToIndividualStacks(CloudCoin coin, String filePath) {
         Stack stack = new Stack(coin);
         try {
             Files.write(Paths.get(filePath + ".stack"), Utils.createGson().toJson(stack).getBytes(StandardCharsets.UTF_8));
@@ -223,7 +184,7 @@ public abstract class IFileSystem {
      * @param cloudCoin the CloudCoin that needs a JPG image template.
      * @return the full file path for a JPG image template.
      */
-    public String GetCoinTemplate(CloudCoin cloudCoin) {
+    public String getJpgTemplate(CloudCoin cloudCoin) {
         int denomination = CoinUtils.getDenomination(cloudCoin);
 
         if (denomination == 0)
@@ -244,42 +205,5 @@ public abstract class IFileSystem {
         for (byte b : data)
             hex.append(HexChart.charAt((b & 0xF0) >> 4)).append(HexChart.charAt((b & 0x0F)));
         return hex.toString();
-    }
-
-    // TODO: Replace boilerplate code for writing a CloudCoin to a file.
-    public boolean writeTo(String folder, CloudCoin cc) {
-        //CoinUtils cu = new CoinUtils(cc);
-        final String quote = "\"";
-        final String tab = "\t";
-        String wholeJson = "{" + System.lineSeparator(); //{
-        String filename = CoinUtils.generateFilename(cc);
-
-        String json = this.setJSON(cc);
-
-        try {
-            if (!Files.exists(Paths.get(folder + CoinUtils.generateFilename(cc) + ".stack"))) {
-                wholeJson += tab + quote + "cloudcoin" + quote + ": [" + System.lineSeparator(); // "cloudcoin" : [
-                wholeJson += json;
-                wholeJson += System.lineSeparator() + tab + "]" + System.lineSeparator() + "}";
-                Files.write(Paths.get(folder + filename + ".stack"), wholeJson.getBytes(StandardCharsets.UTF_8));
-            } else {
-                if (folder.contains("Counterfeit") || folder.contains("Trash")) {
-                    return false;
-                } else if (folder.contains("Imported")) {
-                    Files.delete(Paths.get(folder + filename + ".stack"));
-                    Files.write(Paths.get(folder + filename + ".stack"), wholeJson.getBytes(StandardCharsets.UTF_8));
-                    return false;
-                } else {
-                    System.out.println(filename + ".stack" + " already exists in the folder " + folder);
-                    return true;
-                }
-            }
-            // TODO: Should not write text twice
-            Files.write(Paths.get(folder + filename + ".stack"), wholeJson.getBytes(StandardCharsets.UTF_8));
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 }

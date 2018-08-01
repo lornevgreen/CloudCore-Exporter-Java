@@ -10,7 +10,9 @@ import java.util.Scanner;
 
 public class Exporter {
 
-    /* INSTANCE VARIABLES */
+
+    /* Fields */
+
     IFileSystem fileSystem;
     public SimpleLogger logger;
 
@@ -33,18 +35,21 @@ public class Exporter {
     public static int twoFiftiesTotalCount = 0;
 
 
-    /* CONSTRUCTOR */
+    /* Constructor */
 
     public Exporter(IFileSystem fileUtils) {
         this.fileSystem = fileUtils;
     }
 
 
-    /* PUBLIC METHODS */
+    /* Methods */
 
+    /**
+     * Loads all CloudCoins from the Bank and Fracked folders, and saves the total number of files and denominations.
+     */
     public void CalculateTotals() {
         // Count all Bank coins
-        ArrayList<CloudCoin> bankCoins = fileSystem.LoadFolderCoins(fileSystem.BankFolder);
+        ArrayList<CloudCoin> bankCoins = fileSystem.loadFolderCoins(fileSystem.BankFolder);
         for (CloudCoin coin : bankCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -56,7 +61,7 @@ public class Exporter {
         }
 
         // Count all Fracked coins
-        ArrayList<CloudCoin> frackedCoins = fileSystem.LoadFolderCoins(fileSystem.FrackedFolder);
+        ArrayList<CloudCoin> frackedCoins = fileSystem.loadFolderCoins(fileSystem.FrackedFolder);
         for (CloudCoin coin : frackedCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -76,6 +81,9 @@ public class Exporter {
         twoFiftiesTotalCount = twoFiftiesCount + twoFiftiesFrackedCount;
     }
 
+    /**
+     * Asks the user for instructions on how to export CloudCoins to new files.
+     */
     public void ExportCoins() {
         CalculateTotals();
         Scanner reader = new Scanner(System.in);
@@ -223,13 +231,13 @@ public class Exporter {
             if (1 == stackType) {
                 filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
                 filename = FileUtils.ensureFilenameUnique(filename, ".stack");
-                fileSystem.WriteCoinsToStack(exportCoins, filename);
+                fileSystem.WriteCoinsToSingleStack(exportCoins, filename);
                 updateLog("CloudCoins exported as single Stack to " + filename + ".stack");
             } else {
                 for (CloudCoin coin : exportCoins) {
                     filename = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag;
                     filename = FileUtils.ensureFilenameUnique(filename, ".stack");
-                    fileSystem.WriteCoinToStack(coin, filename);
+                    fileSystem.WriteCoinToIndividualStacks(coin, filename);
 
                     updateLog("CloudCoin exported as Stack to " + filename + ".stack");
                 }
@@ -241,7 +249,7 @@ public class Exporter {
             for (CloudCoin coin : exportCoins) {
                 filename = fileSystem.ExportFolder + CoinUtils.getFilename(coin) + tag;
                 filename = FileUtils.ensureFilenameUnique(filename, ".jpg");
-                boolean fileGenerated = fileSystem.WriteCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), filename);
+                boolean fileGenerated = fileSystem.writeCoinToJpeg(coin, fileSystem.GetCoinTemplate(coin), filename);
                 if (fileGenerated)
                     updateLog("CloudCoin exported as JPG to " + filename + ".jpg");
             }
@@ -251,7 +259,7 @@ public class Exporter {
         else if (3 == fileType) {
             filename = fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag;
             filename = FileUtils.ensureFilenameUnique(filename, ".csv");
-            boolean fileGenerated = fileSystem.WriteCoinToCsv(exportCoins, filename);
+            boolean fileGenerated = fileSystem.writeCoinToCsv(exportCoins, filename);
             if (fileGenerated)
                 updateLog("CloudCoin exported as CSV to " + filename + ".csv");
         }
@@ -261,12 +269,22 @@ public class Exporter {
         fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
     }
 
-    private void updateLog(String logEntry) {
-        System.out.println(logEntry);
-        logger.appendLog(logEntry);
+    /**
+     * Sends a message to the SimpleLogger, and prints the message to console.
+     *
+     * @param message a log message.
+     */
+    private void updateLog(String message) {
+        System.out.println(message);
+        logger.appendLog(message);
     }
 
-    private void updateLogNoPrint(String logEntry) {
-        logger.appendLog(logEntry);
+    /**
+     * Sends a message to the SimpleLogger.
+     *
+     * @param message a log message.
+     */
+    private void updateLogNoPrint(String message) {
+        logger.appendLog(message);
     }
 }

@@ -1,18 +1,21 @@
 package com.cloudcore.exporter.core;
 
-public class Config  {
+public class Config {
+
+
+    /* Constant Fields */
 
     public static final int YEARSTILEXPIRE = 2;
 
-    public static String TAG_IMPORT = "Import";
-    public static String TAG_EXPORT = "Export";
-    public static String TAG_BANK = "Bank";
-    public static String TAG_FRACKED = "Fracked";
-    public static String TAG_TEMPLATES = "Templates";
+    public static final String TAG_EXPORT = "Export";
+    public static final String TAG_BANK = "Bank";
+    public static final String TAG_FRACKED = "Fracked";
+    public static final String TAG_TEMPLATES = "Templates";
+
+    public static final String TAG_LOGS = "Logs";
+
+
+    /* Fields */
 
     public static int NodeCount = 25;
-
-    public static String TAG_LOGS = "Logs";
-    public static String TAG_CSV = "CSV";
-
 }

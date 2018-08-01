@@ -4,14 +4,13 @@ import com.cloudcore.exporter.core.CloudCoin;
 import com.cloudcore.exporter.core.Config;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalField;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
 public class CoinUtils {
 
+
+    /* Methods */
 
     public static void calcExpirationDate(CloudCoin coin) {
         coin.ed = calcExpirationDate();

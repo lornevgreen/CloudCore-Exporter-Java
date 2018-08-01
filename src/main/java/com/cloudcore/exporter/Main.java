@@ -9,15 +9,26 @@ import java.time.format.DateTimeFormatter;
 
 public class Main {
 
-    public static String rootFolder = Paths.get("C:/CloudCoins-Exporter").toAbsolutePath().toString();
 
-    static FileSystem FS;
+    /* Constants */
+
+    public static final String rootFolder = Paths.get("C:/CloudCoins-Exporter").toAbsolutePath().toString();
+
+
+    /* Fields */
+
+    static FileSystem fs;
     public static SimpleLogger logger;
 
+    /* Methods */
+
+    /**
+     * Creates an Exporter instance and runs it.
+     */
     public static void main(String[] args) {
         try {
             setup();
-            Exporter exporter = new Exporter(FS);
+            Exporter exporter = new Exporter(fs);
             exporter.logger = logger;
 
             exporter.ExportCoins();
@@ -30,12 +41,15 @@ public class Main {
         logger.writeLogToFile();
     }
 
+    /**
+     * Sets up the FileSystem instance in the defined rootFolder.
+     */
     private static void setup() {
-        FS = new FileSystem(rootFolder);
-        FS.CreateDirectories();
-        FS.LoadFileSystem();
+        fs = new FileSystem(rootFolder);
+        fs.createDirectories();
+        fs.loadFileSystem();
 
-        logger = new SimpleLogger(FS.LogsFolder + "logs" +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")).toLowerCase() + ".log", true);
+        logger = new SimpleLogger(fs.LogsFolder + "logs" +
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")).toLowerCase() + ".log");
     }
 }

@@ -16,9 +16,10 @@ import java.util.Collection;
 public class FileUtils {
 
 
+    /* Methods */
+
     /**
-     * Appends a filename with an increasing index if a filename is in use.
-     * Loops until a free filename is found.
+     * Appends a filename with an increasing index if a filename is in use. Loops until a free filename is found.
      * TODO: Potential endless loop if every filename is taken.
      *
      * @param filename
@@ -41,20 +42,20 @@ public class FileUtils {
     /**
      * Attempts to read a JSON Object from a file.
      *
-     * @param jsonFilePath the filepath pointing to the JSON file
-     * @return String
+     * @param fullFilePath the absolute filepath of the JSON file.
+     * @return JSON String
      */
-    public static String loadJSON(String jsonFilePath) {
+    public static String loadJSON(String fullFilePath) {
         String jsonData = "";
         BufferedReader br = null;
         try {
             String line;
-            br = new BufferedReader(new FileReader(jsonFilePath));
+            br = new BufferedReader(new FileReader(fullFilePath));
             while ((line = br.readLine()) != null) {
                 jsonData += line + System.lineSeparator();
             }
         } catch (IOException e) {
-            System.out.println("Failed to open " + jsonFilePath);
+            System.out.println("Failed to open " + fullFilePath);
             e.printStackTrace();
         } finally {
             try {
@@ -67,17 +68,23 @@ public class FileUtils {
         return jsonData;
     }
 
-    public static ArrayList<CloudCoin> loadCloudCoinsFromStack(String fileName) {
-        String fileJson = loadJSON(fileName);
+    /**
+     * Loads an array of CloudCoins from a Stack file.
+     *
+     * @param fullFilePath the absolute filepath of the Stack file.
+     * @return ArrayList of CloudCoins.
+     */
+    public static ArrayList<CloudCoin> loadCloudCoinsFromStack(String fullFilePath) {
+        String fileJson = loadJSON(fullFilePath);
         if (fileJson == null) {
-            System.out.println("File " + fileName + " was not imported.");
+            System.out.println("File " + fullFilePath + " was not imported.");
             return new ArrayList<>();
         }
 
         try {
             Stack stack = Utils.createGson().fromJson(fileJson, Stack.class);
             for (CloudCoin coin : stack.cc)
-                coin.setFilename(fileName);
+                coin.setFullFilePath(fullFilePath);
             return new ArrayList<>(Arrays.asList(stack.cc));
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
@@ -89,16 +96,16 @@ public class FileUtils {
     /**
      * Returns an array containing all filenames in a directory.
      *
-     * @param directoryPath the directory to check for files
-     * @return String[]
+     * @param folderPath the folder to check for files.
+     * @return String Array.
      */
-    public static String[] selectFileNamesInFolder(String directoryPath) {
-        File dir = new File(directoryPath);
+    public static String[] selectFileNamesInFolder(String folderPath) {
+        File folder = new File(folderPath);
         Collection<String> files = new ArrayList<>();
-        if (dir.isDirectory()) {
-            File[] listFiles = dir.listFiles();
+        if (folder.isDirectory()) {
+            File[] filenames = folder.listFiles();
 
-            for (File file : listFiles) {
+            for (File file : filenames) {
                 if (file.isFile()) {//Only add files with the matching file extension
                     files.add(file.getName());
                 }

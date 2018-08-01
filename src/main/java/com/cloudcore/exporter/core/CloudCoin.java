@@ -10,6 +10,8 @@ import java.util.*;
 public class CloudCoin {
 
 
+    /* JSON Fields */
+
     @Expose
     @SerializedName("nn")
     public int nn;
@@ -29,25 +31,35 @@ public class CloudCoin {
     @SerializedName("aoid")
     public ArrayList<String> aoid = new ArrayList<>();
 
-    public transient String currentFilename;
-    public transient String currentExtension;
+
+    /* Fields */
+
+    private transient String fullFilePath;
 
 
-    /* Constructors */
+    /* Constructor */
 
-    private CloudCoin(String filename) {
-        setFilename(filename);
+    /**
+     * Simple CloudCoin constructor for setting the filepath of the coin. This is used when deleting or renaming a file.
+     *
+     * @param fullFilePath the absolute filepath of the CloudCoin.
+     */
+    private CloudCoin(String fullFilePath) {
+        this.fullFilePath = fullFilePath;
     }
+
+
+    /* Methods */
 
     /**
      * CloudCoin Constructor for importing a CloudCoin from a CSV file. (Comma-Separated Values)
      *
-     * @param header JPG header string.
-     * @param filename Filename
-     * @return CloudCoin
+     * @param header       JPG header string.
+     * @param fullFilePath the absolute filepath of the CloudCoin.
+     * @return a CloudCoin object.
      */
-    public static CloudCoin fromJpgHeader(String header, String filename) {
-        CloudCoin cc = new CloudCoin(filename);
+    public static CloudCoin fromJpgHeader(String header, String fullFilePath) {
+        CloudCoin cc = new CloudCoin(fullFilePath);
 
         int startAn = 40;
         for (int i = 0; i < 25; i++) {
@@ -68,16 +80,12 @@ public class CloudCoin {
     /**
      * CloudCoin Constructor for importing a CloudCoin from a CSV file. (Comma-Separated Values)
      *
-     * @param csv csv String
-     * @param filename Filename
-     * @return CloudCoin
+     * @param csv          CSV file as a String.
+     * @param fullFilePath the absolute filepath of the CloudCoin.
+     * @return a CloudCoin object.
      */
-    public static CloudCoin fromCsv(String csv, String filename) {
-        CloudCoin coin = new CloudCoin(filename);
-
-        coin.currentExtension = filename.substring(filename.lastIndexOf('.'));
-        coin.currentFilename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1,
-                filename.length() - coin.currentExtension.length());
+    public static CloudCoin fromCsv(String csv, String fullFilePath) {
+        CloudCoin coin = new CloudCoin(fullFilePath);
 
         try {
             String[] values = csv.split(",");
@@ -85,9 +93,8 @@ public class CloudCoin {
             coin.sn = Integer.parseInt(values[0]);
             coin.nn = Integer.parseInt(values[1]);
             coin.an = new ArrayList<>();
-            for (int i = 0; i < Config.NodeCount; i++) {
+            for (int i = 0; i < Config.NodeCount; i++)
                 coin.an.add(values[i + 3]);
-            }
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
         }
@@ -95,6 +102,11 @@ public class CloudCoin {
         return coin;
     }
 
+    /**
+     * Returns a human readable String describing the contents of the CloudCoin.
+     *
+     * @return a String describing the CloudCoin.
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -107,6 +119,7 @@ public class CloudCoin {
         return builder.toString();
     }
 
+
     /* Getters and Setters */
 
     public int getSn() {
@@ -117,9 +130,11 @@ public class CloudCoin {
         this.sn = sn;
     }
 
-    public void setFilename(String filename) {
-        currentExtension = filename.substring(filename.lastIndexOf('.'));
-        currentFilename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1,
-                filename.length() - currentExtension.length());
+    public void setFullFilePath(String fullFilePath) {
+        this.fullFilePath = fullFilePath;
+    }
+
+    public String getFullFilePath() {
+        return fullFilePath;
     }
 }

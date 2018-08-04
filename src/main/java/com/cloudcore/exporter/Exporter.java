@@ -264,9 +264,26 @@ public class Exporter {
                 updateLog("CloudCoin exported as CSV to " + filename + ".csv");
         }
 
+        saveRemainingCoins(totalCoins, exportCoins);
+
         // Remove exported coins
         fileSystem.RemoveCoins(exportCoins, fileSystem.BankFolder);
         fileSystem.RemoveCoins(exportCoins, fileSystem.FrackedFolder);
+    }
+
+    private void saveRemainingCoins(ArrayList<CloudCoin> totalCoins, ArrayList<CloudCoin> exportCoins) {
+        totalCoins.removeAll(exportCoins);
+
+        if (totalCoins.size() == 0)
+            return;
+
+        for (CloudCoin coin : totalCoins) {
+            String filename = fileSystem.ExportFolder + CoinUtils.generateFilename(coin);
+            filename = FileUtils.ensureFilenameUnique(filename, ".stack");
+            fileSystem.writeCoinToIndividualStacks(coin, filename);
+
+            updateLogNoPrint("CloudCoin exported as Stack to " + filename + ".stack");
+        }
     }
 
     /**

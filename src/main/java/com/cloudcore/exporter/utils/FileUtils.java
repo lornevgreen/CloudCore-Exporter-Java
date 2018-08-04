@@ -46,26 +46,13 @@ public class FileUtils {
      * @return JSON String
      */
     public static String loadJSON(String fullFilePath) {
-        String jsonData = "";
-        BufferedReader br = null;
         try {
-            String line;
-            br = new BufferedReader(new FileReader(fullFilePath));
-            while ((line = br.readLine()) != null) {
-                jsonData += line + System.lineSeparator();
-            }
+            return new String(Files.readAllBytes(Paths.get(fullFilePath)));
         } catch (IOException e) {
             System.out.println("Failed to open " + fullFilePath);
             e.printStackTrace();
-        } finally {
-            try {
-                if (br != null)
-                    br.close();
-            } catch (IOException e) {
-                //e.printStackTrace();
-            }
+            return null;
         }
-        return jsonData;
     }
 
     /**

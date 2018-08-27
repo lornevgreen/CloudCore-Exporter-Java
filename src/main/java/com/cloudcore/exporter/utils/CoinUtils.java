@@ -13,7 +13,7 @@ public class CoinUtils {
     /* Methods */
 
     public static void calcExpirationDate(CloudCoin coin) {
-        coin.ed = calcExpirationDate();
+        coin.setEd(calcExpirationDate());
     }
     public static String calcExpirationDate() {
         LocalDate expirationDate = LocalDate.now().plusYears(Config.EXPIRATION_YEARS);
@@ -51,11 +51,9 @@ public class CoinUtils {
      * Generates a name for the CloudCoin based on the denomination, Network Number, and Serial Number.
      * <br>
      * <br>Example: 25.1.6123456
-     *
-     * @return String a filename
      */
     public static String generateFilename(CloudCoin coin) {
-        return CoinUtils.getDenomination(coin) + ".CloudCoin." + coin.nn + "." + coin.getSn();
+        return getDenomination(coin) + ".CloudCoin." + coin.getNn() + "." + coin.getSn();
     }
 
     /**
@@ -73,16 +71,16 @@ public class CoinUtils {
     public static String pownStringToHex(CloudCoin coin) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (int i = 0, j = coin.pown.length(); i < j; i++) {
-            if ('u' == coin.pown.charAt(i))
+        for (int i = 0, j = coin.getPown().length(); i < j; i++) {
+            if ('u' == coin.getPown().charAt(i))
                 stringBuilder.append('0');
-            else if ('p' == coin.pown.charAt(i))
+            else if ('p' == coin.getPown().charAt(i))
                 stringBuilder.append('1');
-            else if ('n' == coin.pown.charAt(i))
+            else if ('n' == coin.getPown().charAt(i))
                 stringBuilder.append('2');
-            else if ('e' == coin.pown.charAt(i))
+            else if ('e' == coin.getPown().charAt(i))
                 stringBuilder.append('E');
-            else if ('f' == coin.pown.charAt(i))
+            else if ('f' == coin.getPown().charAt(i))
                 stringBuilder.append('F');
         }
 

@@ -69,7 +69,7 @@ public class FileSystem extends IFileSystem {
         jpgHeader.append("01C34A46494600010101006000601D05");
         // ANs (400 bytes)
         for (int i = 0; (i < 25); i++)
-            jpgHeader.append(cloudCoin.an.get(i));
+            jpgHeader.append(cloudCoin.getAn().get(i));
         // AOID
         jpgHeader.append("00000000000000000000000000000000"); // Set to unknown so program does not export user data
         // POWN
@@ -142,10 +142,10 @@ public class FileSystem extends IFileSystem {
             // Denomination
             csv.append(CoinUtils.getDenomination(coin)).append(',');
             // Network Number
-            csv.append(coin.nn).append(',');
+            csv.append(coin.getNn()).append(',');
             // ANs
             for (int i = 0; i < Config.nodeCount; i++)
-                csv.append(coin.an.get(i)).append(",");
+                csv.append(coin.getAn().get(i)).append(",");
             // new line
             csv.append(System.lineSeparator());
         }

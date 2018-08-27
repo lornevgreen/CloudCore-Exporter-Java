@@ -13,22 +13,22 @@ public class CloudCoin {
 
     @Expose
     @SerializedName("nn")
-    public int nn;
+    private int nn;
     @Expose
     @SerializedName("sn")
     private int sn;
     @Expose
     @SerializedName("an")
-    public ArrayList<String> an = new ArrayList<>();
+    private ArrayList<String> an = new ArrayList<>();
     @Expose
     @SerializedName("ed")
-    public String ed = CoinUtils.calcExpirationDate();
+    private String ed = CoinUtils.calcExpirationDate();
     @Expose
     @SerializedName("pown")
-    public String pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
+    private String pown = "uuuuuuuuuuuuuuuuuuuuuuuuu";
     @Expose
     @SerializedName("aoid")
-    public ArrayList<String> aoid = new ArrayList<>();
+    private ArrayList<String> aoid = new ArrayList<>();
 
 
     /* Fields */
@@ -62,15 +62,15 @@ public class CloudCoin {
 
         int startAn = 40;
         for (int i = 0; i < 25; i++) {
-            cc.an.add(header.substring(startAn, startAn + 32));
+            cc.getAn().add(header.substring(startAn, startAn + 32));
             startAn += 32;
         }
 
-        cc.aoid = null; //header.substring(808, 840);
-        cc.pown = CoinUtils.pownHexToString(header.substring(840, 872));
+        cc.setAoid(null); //header.substring(808, 840);
+        cc.setPown(CoinUtils.pownHexToString(header.substring(840, 872)));
         //cc.hc = header.substring(890, 898);
-        cc.ed = CoinUtils.expirationDateHexToString(header.substring(900, 902));
-        cc.nn = Integer.valueOf(header.substring(902, 904), 16);
+        cc.setEd(CoinUtils.expirationDateHexToString(header.substring(900, 902)));
+        cc.setNn(Integer.valueOf(header.substring(902, 904), 16));
         cc.setSn(Integer.valueOf(header.substring(904, 910), 16));
 
         return cc;
@@ -89,12 +89,14 @@ public class CloudCoin {
         try {
             String[] values = csv.split(",");
 
-            coin.sn = Integer.parseInt(values[0]);
+            coin.setSn(Integer.parseInt(values[0]));
             // values[1] is denomination.
-            coin.nn = Integer.parseInt(values[2]);
-            coin.an = new ArrayList<>();
+            coin.setNn(Integer.parseInt(values[2]));
+            ArrayList<String> ans = new ArrayList<>();
             for (int i = 0; i < Config.nodeCount; i++)
-                coin.an.add(values[i + 3]);
+                ans.add(values[i + 3]);
+            coin.setAn(ans);
+
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
         }
@@ -110,11 +112,11 @@ public class CloudCoin {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("cloudcoin: (nn:").append(nn).append(", sn:").append(sn);
-        if (null != ed) builder.append(", ed:").append(ed);
-        if (null != pown) builder.append(", pown:").append(pown);
-        if (null != aoid) builder.append(", aoid:").append(aoid.toString());
-        if (null != an) builder.append(", an:").append(an.toString());
+        builder.append("cloudcoin: (nn:").append(getNn()).append(", sn:").append(getSn());
+        if (null != getEd()) builder.append(", ed:").append(getEd());
+        if (null != getPown()) builder.append(", pown:").append(getPown());
+        if (null != getAoid()) builder.append(", aoid:").append(getAoid().toString());
+        if (null != getAn()) builder.append(", an:").append(getAn().toString());
 
         return builder.toString();
     }
@@ -122,19 +124,20 @@ public class CloudCoin {
 
     /* Getters and Setters */
 
-    public int getSn() {
-        return sn;
-    }
+    public int getNn() { return nn; }
+    public int getSn() { return sn; }
+    public ArrayList<String> getAn() { return an; }
+    public String getEd() { return ed; }
+    public String getPown() { return pown; }
+    public ArrayList<String> getAoid() { return aoid; }
+    public String getFullFilePath() { return fullFilePath; }
 
-    public void setSn(int sn) {
-        this.sn = sn;
-    }
+    public void setNn(int nn) { this.nn = nn; }
+    public void setSn(int sn) { this.sn = sn; }
+    public void setAn(ArrayList<String> an) { this.an = an; }
+    public void setEd(String ed) { this.ed = ed; }
+    public void setPown(String pown) { this.pown = pown; }
+    public void setAoid(ArrayList<String> aoid) { this.aoid = aoid; }
 
-    public void setFullFilePath(String fullFilePath) {
-        this.fullFilePath = fullFilePath;
-    }
-
-    public String getFullFilePath() {
-        return fullFilePath;
-    }
+    public void setFullFilePath(String fullFilePath) { this.fullFilePath = fullFilePath; }
 }

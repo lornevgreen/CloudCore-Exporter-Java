@@ -37,7 +37,7 @@ public class CloudCoin {
     private transient String fullFilePath;
 
 
-    /* Constructor */
+    /* Constructors */
 
     /**
      * Simple CloudCoin constructor for setting the filepath of the coin. This is used when deleting or renaming a file.

@@ -4,7 +4,6 @@ import com.cloudcore.exporter.utils.CoinUtils;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.File;
 import java.util.*;
 
 public class CloudCoin {
@@ -94,7 +93,7 @@ public class CloudCoin {
             // values[1] is denomination.
             coin.nn = Integer.parseInt(values[2]);
             coin.an = new ArrayList<>();
-            for (int i = 0; i < Config.NodeCount; i++)
+            for (int i = 0; i < Config.nodeCount; i++)
                 coin.an.add(values[i + 3]);
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());

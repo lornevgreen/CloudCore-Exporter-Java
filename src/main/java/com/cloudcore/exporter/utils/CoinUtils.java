@@ -16,7 +16,7 @@ public class CoinUtils {
         coin.ed = calcExpirationDate();
     }
     public static String calcExpirationDate() {
-        LocalDate expirationDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
+        LocalDate expirationDate = LocalDate.now().plusYears(Config.EXPIRATION_YEARS);
         return (expirationDate.getMonthValue() + "-" + expirationDate.getYear());
     }
 
@@ -125,7 +125,7 @@ public class CoinUtils {
      */
     public static String expirationDateStringToHex() {
         LocalDate zeroDate = LocalDate.of(2016, 8, 13);
-        LocalDate expirationDate = LocalDate.now().plusYears(Config.YEARSTILEXPIRE);
+        LocalDate expirationDate = LocalDate.now().plusYears(Config.EXPIRATION_YEARS);
         int monthsAfterZero = (int) (DAYS.between(zeroDate, expirationDate) / (365.25 / 12));
         return Integer.toHexString(monthsAfterZero);
     }

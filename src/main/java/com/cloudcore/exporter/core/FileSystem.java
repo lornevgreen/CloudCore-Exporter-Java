@@ -130,7 +130,7 @@ public class FileSystem extends IFileSystem {
         // Header
         csv.append("sn,denomination,nn,");
         // ANs Header
-        for (int i = 0; i < Config.NodeCount; i++)
+        for (int i = 0; i < Config.nodeCount; i++)
             csv.append("an").append((i + 1)).append(",");
         // new line
         csv.append(System.lineSeparator());
@@ -144,7 +144,7 @@ public class FileSystem extends IFileSystem {
             // Network Number
             csv.append(coin.nn).append(',');
             // ANs
-            for (int i = 0; i < Config.NodeCount; i++)
+            for (int i = 0; i < Config.nodeCount; i++)
                 csv.append(coin.an.get(i)).append(",");
             // new line
             csv.append(System.lineSeparator());

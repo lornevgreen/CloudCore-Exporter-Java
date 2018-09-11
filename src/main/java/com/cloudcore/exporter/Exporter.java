@@ -12,8 +12,7 @@ public class Exporter {
 
 
     /* Fields */
-
-    IFileSystem fileSystem;
+    
     public SimpleLogger logger;
 
     public static int onesCount = 0;
@@ -35,13 +34,6 @@ public class Exporter {
     public static int twoFiftiesTotalCount = 0;
 
 
-    /* Constructor */
-
-    public Exporter(IFileSystem fileUtils) {
-        this.fileSystem = fileUtils;
-    }
-
-
     /* Methods */
 
     /**
@@ -49,7 +41,7 @@ public class Exporter {
      */
     public void CalculateTotals() {
         // Count all Bank coins
-        ArrayList<CloudCoin> bankCoins = fileSystem.loadFolderCoins(fileSystem.BankFolder);
+        ArrayList<CloudCoin> bankCoins = FileSystem.loadFolderCoins(FileSystem.BankFolder);
         for (CloudCoin coin : bankCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -61,7 +53,7 @@ public class Exporter {
         }
 
         // Count all Fracked coins
-        ArrayList<CloudCoin> frackedCoins = fileSystem.loadFolderCoins(fileSystem.FrackedFolder);
+        ArrayList<CloudCoin> frackedCoins = FileSystem.loadFolderCoins(FileSystem.FrackedFolder);
         for (CloudCoin coin : frackedCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -181,8 +173,8 @@ public class Exporter {
 
         // Get the CloudCoins that will be used for the export.
         int totalSaved = exp_1 + (exp_5 * 5) + (exp_25 * 25) + (exp_100 * 100) + (exp_250 * 250);
-        ArrayList<CloudCoin> totalCoins = IFileSystem.bankCoins;
-        totalCoins.addAll(IFileSystem.frackedCoins);
+        ArrayList<CloudCoin> totalCoins = FileSystem.bankCoins;
+        totalCoins.addAll(FileSystem.frackedCoins);
 
         ArrayList<CloudCoin> onesToExport = new ArrayList<>();
         ArrayList<CloudCoin> fivesToExport = new ArrayList<>();
@@ -229,15 +221,15 @@ public class Exporter {
         // Export Coins as one Stack or individual Stacks
         if (1 == fileType) {
             if (1 == stackType) {
-                filename = (fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
+                filename = (FileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag);
                 filename = FileUtils.ensureFilenameUnique(filename, ".stack");
-                fileSystem.writeCoinsToSingleStack(exportCoins, filename);
+                FileSystem.writeCoinsToSingleStack(exportCoins, filename);
                 updateLog("CloudCoins exported as single Stack to " + filename + ".stack");
             } else {
                 for (CloudCoin coin : exportCoins) {
-                    filename = fileSystem.ExportFolder + CoinUtils.generateFilename(coin) + tag;
+                    filename = FileSystem.ExportFolder + CoinUtils.generateFilename(coin) + tag;
                     filename = FileUtils.ensureFilenameUnique(filename, ".stack");
-                    fileSystem.writeCoinToIndividualStacks(coin, filename);
+                    FileSystem.writeCoinToIndividualStacks(coin, filename);
 
                     updateLog("CloudCoin exported as Stack to " + filename + ".stack");
                 }
@@ -247,9 +239,9 @@ public class Exporter {
         // Export Coins as jpg Images
         else if (2 == fileType) {
             for (CloudCoin coin : exportCoins) {
-                filename = fileSystem.ExportFolder + CoinUtils.generateFilename(coin) + tag;
+                filename = FileSystem.ExportFolder + CoinUtils.generateFilename(coin) + tag;
                 filename = FileUtils.ensureFilenameUnique(filename, ".jpg");
-                boolean fileGenerated = fileSystem.writeCoinToJpeg(coin, fileSystem.getJpgTemplate(coin), filename);
+                boolean fileGenerated = FileSystem.writeCoinToJpeg(coin, FileSystem.getJpgTemplate(coin), filename);
                 if (fileGenerated)
                     updateLog("CloudCoin exported as JPG to " + filename + ".jpg");
             }
@@ -257,9 +249,9 @@ public class Exporter {
 
         // Export Coins as CSV
         else if (3 == fileType) {
-            filename = fileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag;
+            filename = FileSystem.ExportFolder + totalSaved + ".CloudCoins" + tag;
             filename = FileUtils.ensureFilenameUnique(filename, ".csv");
-            boolean fileGenerated = fileSystem.writeCoinsToCsv(exportCoins, filename);
+            boolean fileGenerated = FileSystem.writeCoinsToCsv(exportCoins, filename);
             if (fileGenerated)
                 updateLog("CloudCoin exported as CSV to " + filename + ".csv");
         }

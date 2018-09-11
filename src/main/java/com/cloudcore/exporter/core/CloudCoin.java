@@ -19,7 +19,7 @@ public class CloudCoin {
     private int sn;
     @Expose
     @SerializedName("an")
-    private ArrayList<String> an = new ArrayList<>();
+    private ArrayList<String> an = new ArrayList<>(Config.nodeCount);
     @Expose
     @SerializedName("ed")
     private String ed = CoinUtils.calcExpirationDate();

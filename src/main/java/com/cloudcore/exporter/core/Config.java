@@ -11,9 +11,9 @@ public class Config {
 
     public static final String TAG_BANK = "Bank";
     public static final String TAG_FRACKED = "Fracked";
-    public static final String TAG_TEMPLATES = "Templates";
 
     public static final String TAG_LOGS = "Logs";
+    public static final String TAG_TEMPLATES = "Templates";
 
 
     /* Fields */

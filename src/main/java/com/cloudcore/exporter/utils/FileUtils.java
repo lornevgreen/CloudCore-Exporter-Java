@@ -43,20 +43,20 @@ public class FileUtils {
     /**
      * Loads an array of CloudCoins from a Stack file.
      *
-     * @param fullFilePath the absolute filepath of the Stack file.
+     * @param folder   the folder containing the Stack file.
+     * @param filename the absolute filepath of the Stack file.
      * @return ArrayList of CloudCoins.
      */
-    public static ArrayList<CloudCoin> loadCloudCoinsFromStack(String fullFilePath) {
+    public static ArrayList<CloudCoin> loadCloudCoinsFromStack(String folder, String filename) {
         try {
-            String file = new String(Files.readAllBytes(Paths.get(fullFilePath)));
+            String file = new String(Files.readAllBytes(Paths.get(folder + filename)));
             Stack stack = Utils.createGson().fromJson(file, Stack.class);
-            for (CloudCoin coin : stack.cc)
-                coin.setFullFilePath(fullFilePath);
+            for (CloudCoin coin : stack.cc) {
+                coin.folder = folder;
+                coin.currentFilename = filename;
+            }
             return new ArrayList<>(Arrays.asList(stack.cc));
-        } catch (IOException e) {
-            System.out.println(e.getLocalizedMessage());
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
+        } catch (IOException | JsonSyntaxException e) {
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
         }

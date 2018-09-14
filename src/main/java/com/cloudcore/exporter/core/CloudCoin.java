@@ -33,7 +33,9 @@ public class CloudCoin {
 
     /* Fields */
 
-    private transient String fullFilePath;
+    public transient String folder;
+
+    public transient String currentFilename;
 
 
     /* Constructors */
@@ -41,10 +43,12 @@ public class CloudCoin {
     /**
      * Simple CloudCoin constructor for setting the filepath of the coin. This is used when deleting or renaming a file.
      *
-     * @param fullFilePath the absolute filepath of the CloudCoin.
+     * @param folder   the folder containing the Stack file.
+     * @param filename the absolute filepath of the Stack file.
      */
-    private CloudCoin(String fullFilePath) {
-        this.fullFilePath = fullFilePath;
+    private CloudCoin(String folder, String filename) {
+        this.folder = folder;
+        this.currentFilename = filename;
     }
 
 
@@ -53,12 +57,13 @@ public class CloudCoin {
     /**
      * CloudCoin Constructor for importing a CloudCoin from a JPG file.
      *
-     * @param header       JPG header string.
-     * @param fullFilePath the absolute filepath of the CloudCoin.
+     * @param header   JPG header string.
+     * @param folder   the folder containing the Stack file.
+     * @param filename the absolute filepath of the Stack file.
      * @return a CloudCoin object.
      */
-    public static CloudCoin fromJpgHeader(String header, String fullFilePath) {
-        CloudCoin cc = new CloudCoin(fullFilePath);
+    public static CloudCoin fromJpgHeader(String header, String folder, String filename) {
+        CloudCoin cc = new CloudCoin(folder, filename);
 
         int startAn = 40;
         for (int i = 0; i < 25; i++) {
@@ -79,12 +84,13 @@ public class CloudCoin {
     /**
      * CloudCoin Constructor for importing a CloudCoin from a CSV file.
      *
-     * @param csv          CSV file as a String.
-     * @param fullFilePath the absolute filepath of the CloudCoin.
+     * @param csv      CSV file as a String.
+     * @param folder   the folder containing the Stack file.
+     * @param filename the absolute filepath of the Stack file.
      * @return a CloudCoin object.
      */
-    public static CloudCoin fromCsv(String csv, String fullFilePath) {
-        CloudCoin coin = new CloudCoin(fullFilePath);
+    public static CloudCoin fromCsv(String csv, String folder, String filename) {
+        CloudCoin coin = new CloudCoin(folder, filename);
 
         try {
             String[] values = csv.split(",");
@@ -130,7 +136,6 @@ public class CloudCoin {
     public String getEd() { return ed; }
     public String getPown() { return pown; }
     public ArrayList<String> getAoid() { return aoid; }
-    public String getFullFilePath() { return fullFilePath; }
 
     public void setNn(int nn) { this.nn = nn; }
     public void setSn(int sn) { this.sn = sn; }
@@ -138,6 +143,4 @@ public class CloudCoin {
     public void setEd(String ed) { this.ed = ed; }
     public void setPown(String pown) { this.pown = pown; }
     public void setAoid(ArrayList<String> aoid) { this.aoid = aoid; }
-
-    public void setFullFilePath(String fullFilePath) { this.fullFilePath = fullFilePath; }
 }

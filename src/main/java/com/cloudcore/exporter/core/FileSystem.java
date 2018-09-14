@@ -85,27 +85,27 @@ public class FileSystem {
             if (index == -1) continue;
 
             extension = filenames[i].substring(index + 1);
-            String fullFilePath = folder + filenames[i];
 
             switch (extension) {
                 //case "celeb":
                 //case "celebrium":
                 case "stack":
-                    ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromStack(fullFilePath);
+                    ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromStack(folder, filenames[i]);
                     folderCoins.addAll(coins);
                     break;
                 case "jpg":
                 case "jpeg":
-                    CloudCoin coin = importJPG(fullFilePath);
+                    CloudCoin coin = importJPG(folder, filenames[i]);
                     folderCoins.add(coin);
                     break;
                 case "csv":
                     ArrayList<String> lines;
+                    String fullFilePath = folder + filenames[i];
                     try {
                         ArrayList<CloudCoin> csvCoins = new ArrayList<>();
                         lines = new ArrayList<>(Files.readAllLines(Paths.get(fullFilePath)));
                         for (String line : lines)
-                            csvCoins.add(CloudCoin.fromCsv(line, filenames[i]));
+                            csvCoins.add(CloudCoin.fromCsv(line, folder, filenames[i]));
                         csvCoins.remove(null);
                         folderCoins.addAll(csvCoins);
                     } catch (IOException e) {
@@ -121,11 +121,13 @@ public class FileSystem {
     /**
      * Import a CloudCoin embedded in a jpg header.
      *
-     * @param fullFilePath the absolute filepath of the JPG file.
+     * @param folder the folder containing the jpg file.
+     * @param filename the absolute filepath of the jpg file.
      */
-    private static CloudCoin importJPG(String fullFilePath) {
-        // read until Read method returns 0 (end of the stream has been reached)
+    private static CloudCoin importJPG(String folder, String filename) {
+        String fullFilePath = folder + filename;
         try {
+            // read until Read method returns 0 (end of the stream has been reached)
             byte[] headerBytes = new byte[455];
             int count, sum = 0;
 
@@ -136,7 +138,7 @@ public class FileSystem {
             inputStream.close();
 
             String header = bytesToHexString(headerBytes);
-            return CloudCoin.fromJpgHeader(header, fullFilePath.substring(fullFilePath.lastIndexOf(File.separatorChar)));
+            return CloudCoin.fromJpgHeader(header, folder, filename);
         } catch (IOException e) {
             System.out.println("IO Exception:" + fullFilePath + e);
             e.printStackTrace();
@@ -153,7 +155,7 @@ public class FileSystem {
     public static void removeCoins(ArrayList<CloudCoin> cloudCoins, String folder) {
         for (CloudCoin coin : cloudCoins) {
             try {
-                Files.deleteIfExists(Paths.get(folder + coin.getFullFilePath()));
+                Files.deleteIfExists(Paths.get(folder + coin.folder + coin.currentFilename));
             } catch (IOException e) {
                 System.out.println(e.getLocalizedMessage());
                 e.printStackTrace();

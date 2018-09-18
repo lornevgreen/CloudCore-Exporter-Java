@@ -46,69 +46,13 @@ public class CloudCoin {
      * @param folder   the folder containing the Stack file.
      * @param filename the absolute filepath of the Stack file.
      */
-    private CloudCoin(String folder, String filename) {
+    public CloudCoin(String folder, String filename) {
         this.folder = folder;
         this.currentFilename = filename;
     }
 
 
     /* Methods */
-
-    /**
-     * CloudCoin Constructor for importing a CloudCoin from a JPG file.
-     *
-     * @param header   JPG header string.
-     * @param folder   the folder containing the Stack file.
-     * @param filename the absolute filepath of the Stack file.
-     * @return a CloudCoin object.
-     */
-    public static CloudCoin fromJpgHeader(String header, String folder, String filename) {
-        CloudCoin cc = new CloudCoin(folder, filename);
-
-        int startAn = 40;
-        for (int i = 0; i < 25; i++) {
-            cc.getAn().add(header.substring(startAn, startAn + 32));
-            startAn += 32;
-        }
-
-        cc.setAoid(null); //header.substring(808, 840);
-        cc.setPown(CoinUtils.pownHexToString(header.substring(840, 872)));
-        //cc.hc = header.substring(890, 898);
-        cc.setEd(CoinUtils.expirationDateHexToString(header.substring(900, 902)));
-        cc.setNn(Integer.valueOf(header.substring(902, 904), 16));
-        cc.setSn(Integer.valueOf(header.substring(904, 910), 16));
-
-        return cc;
-    }
-
-    /**
-     * CloudCoin Constructor for importing a CloudCoin from a CSV file.
-     *
-     * @param csv      CSV file as a String.
-     * @param folder   the folder containing the Stack file.
-     * @param filename the absolute filepath of the Stack file.
-     * @return a CloudCoin object.
-     */
-    public static CloudCoin fromCsv(String csv, String folder, String filename) {
-        CloudCoin coin = new CloudCoin(folder, filename);
-
-        try {
-            String[] values = csv.split(",");
-
-            coin.setSn(Integer.parseInt(values[0]));
-            // values[1] is denomination.
-            coin.setNn(Integer.parseInt(values[2]));
-            ArrayList<String> ans = new ArrayList<>();
-            for (int i = 0; i < Config.nodeCount; i++)
-                ans.add(values[i + 3]);
-            coin.setAn(ans);
-
-        } catch (Exception e) {
-            System.out.println(e.getLocalizedMessage());
-        }
-
-        return coin;
-    }
 
     /**
      * Returns a human readable String describing the contents of the CloudCoin.
@@ -123,7 +67,6 @@ public class CloudCoin {
         if (null != getPown()) builder.append(", pown:").append(getPown());
         if (null != getAoid()) builder.append(", aoid:").append(getAoid().toString());
         if (null != getAn()) builder.append(", an:").append(getAn().toString());
-
         return builder.toString();
     }
 

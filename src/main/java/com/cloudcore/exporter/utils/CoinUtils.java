@@ -4,10 +4,70 @@ import com.cloudcore.exporter.core.CloudCoin;
 import com.cloudcore.exporter.core.Config;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
 public class CoinUtils {
+
+
+    /* CloudCoin Constructors */
+
+    /**
+     * CloudCoin Constructor for importing a CloudCoin from a JPG file.
+     *
+     * @param header   JPG header string.
+     * @param folder   the folder containing the Stack file.
+     * @param filename the absolute filepath of the Stack file.
+     * @return a CloudCoin object.
+     */
+    public static CloudCoin cloudCoinFromJpgHeader(String header, String folder, String filename) {
+        CloudCoin cc = new CloudCoin(folder, filename);
+
+        int startAn = 40;
+        for (int i = 0; i < 25; i++) {
+            cc.getAn().add(header.substring(startAn, startAn + 32));
+            startAn += 32;
+        }
+
+        cc.setAoid(null); //header.substring(808, 840);
+        cc.setPown(CoinUtils.pownHexToString(header.substring(840, 872)));
+        //cc.hc = header.substring(890, 898);
+        cc.setEd(CoinUtils.expirationDateHexToString(header.substring(900, 902)));
+        cc.setNn(Integer.valueOf(header.substring(902, 904), 16));
+        cc.setSn(Integer.valueOf(header.substring(904, 910), 16));
+
+        return cc;
+    }
+
+    /**
+     * CloudCoin Constructor for importing a CloudCoin from a CSV file.
+     *
+     * @param csv      CSV file as a String.
+     * @param folder   the folder containing the Stack file.
+     * @param filename the absolute filepath of the Stack file.
+     * @return a CloudCoin object.
+     */
+    public static CloudCoin cloudCoinFromCsv(String csv, String folder, String filename) {
+        CloudCoin coin = new CloudCoin(folder, filename);
+
+        try {
+            String[] values = csv.split(",");
+
+            coin.setSn(Integer.parseInt(values[0]));
+            // values[1] is denomination.
+            coin.setNn(Integer.parseInt(values[2]));
+            ArrayList<String> ans = new ArrayList<>();
+            for (int i = 0; i < Config.nodeCount; i++)
+                ans.add(values[i + 3]);
+            coin.setAn(ans);
+
+        } catch (Exception e) {
+            System.out.println(e.getLocalizedMessage());
+        }
+
+        return coin;
+    }
 
 
     /* Methods */

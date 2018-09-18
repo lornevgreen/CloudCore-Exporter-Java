@@ -79,33 +79,30 @@ public class FileSystem {
         ArrayList<CloudCoin> folderCoins = new ArrayList<>();
 
         String[] filenames = FileUtils.selectFileNamesInFolder(folder);
-        String extension;
-        for (int i = 0, length = filenames.length; i < length; i++) {
-            int index = filenames[i].lastIndexOf('.');
+        for (String filename : filenames) {
+            int index = filename.lastIndexOf('.');
             if (index == -1) continue;
 
-            extension = filenames[i].substring(index + 1);
+            String extension = filename.substring(index + 1);
 
             switch (extension) {
-                //case "celeb":
-                //case "celebrium":
                 case "stack":
-                    ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromStack(folder, filenames[i]);
+                    ArrayList<CloudCoin> coins = FileUtils.loadCloudCoinsFromStack(folder, filename);
                     folderCoins.addAll(coins);
                     break;
                 case "jpg":
                 case "jpeg":
-                    CloudCoin coin = importJPG(folder, filenames[i]);
+                    CloudCoin coin = importJPG(folder, filename);
                     folderCoins.add(coin);
                     break;
                 case "csv":
                     ArrayList<String> lines;
-                    String fullFilePath = folder + filenames[i];
+                    String fullFilePath = folder + filename;
                     try {
                         ArrayList<CloudCoin> csvCoins = new ArrayList<>();
                         lines = new ArrayList<>(Files.readAllLines(Paths.get(fullFilePath)));
                         for (String line : lines)
-                            csvCoins.add(CloudCoin.fromCsv(line, folder, filenames[i]));
+                            csvCoins.add(CoinUtils.cloudCoinFromCsv(line, folder, filename));
                         csvCoins.remove(null);
                         folderCoins.addAll(csvCoins);
                     } catch (IOException e) {
@@ -138,7 +135,7 @@ public class FileSystem {
             inputStream.close();
 
             String header = bytesToHexString(headerBytes);
-            return CloudCoin.fromJpgHeader(header, folder, filename);
+            return CoinUtils.cloudCoinFromJpgHeader(header, folder, filename);
         } catch (IOException e) {
             System.out.println("IO Exception:" + fullFilePath + e);
             e.printStackTrace();

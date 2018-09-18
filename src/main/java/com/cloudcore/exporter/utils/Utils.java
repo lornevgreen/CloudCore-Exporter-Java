@@ -1,20 +1,9 @@
 package com.cloudcore.exporter.utils;
 
-import com.cloudcore.exporter.core.CloudCoin;
-import com.cloudcore.exporter.core.Config;
-import com.cloudcore.exporter.core.Stack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Random;
-
 public class Utils {
-
-
-    /* Methods */
 
     /**
      * Creates a Gson object, a JSON parser for converting JSON Strings and objects.
@@ -26,6 +15,20 @@ public class Utils {
                 .excludeFieldsWithoutExposeAnnotation()
                 .setPrettyPrinting()
                 .create();
+    }
+
+    /**
+     * Converts a byte array to a hexadecimal String.
+     *
+     * @param data the byte array.
+     * @return a hexadecimal String.
+     */
+    public static String bytesToHexString(byte[] data) {
+        final String HexChart = "0123456789ABCDEF";
+        final StringBuilder hex = new StringBuilder(data.length * 2);
+        for (byte b : data)
+            hex.append(HexChart.charAt((b & 0xF0) >> 4)).append(HexChart.charAt((b & 0x0F)));
+        return hex.toString();
     }
 
     /**

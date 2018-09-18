@@ -13,6 +13,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 public class FileSystem {
@@ -29,9 +30,6 @@ public class FileSystem {
 
     public static String LogsFolder = RootPath + Config.TAG_LOGS + File.separator;
     public static String TemplateFolder = RootPath + Config.TAG_TEMPLATES + File.separator;
-
-    public static ArrayList<CloudCoin> bankCoins;
-    public static ArrayList<CloudCoin> frackedCoins;
 
 
     /* Methods */
@@ -58,15 +56,6 @@ public class FileSystem {
 
         return true;
     }
-
-    /**
-     * Loads to memory all of the CloudCoins in the Bank and Fracked folders.
-     */
-    public static void loadFileSystem() {
-        bankCoins = loadFolderCoins(BankFolder);
-        frackedCoins = loadFolderCoins(FrackedFolder);
-    }
-
 
 
     /**
@@ -134,7 +123,7 @@ public class FileSystem {
             }
             inputStream.close();
 
-            String header = bytesToHexString(headerBytes);
+            String header = Utils.bytesToHexString(headerBytes);
             return CoinUtils.cloudCoinFromJpgHeader(header, folder, filename);
         } catch (IOException e) {
             System.out.println("IO Exception:" + fullFilePath + e);
@@ -152,11 +141,31 @@ public class FileSystem {
     public static void removeCoins(ArrayList<CloudCoin> cloudCoins, String folder) {
         for (CloudCoin coin : cloudCoins) {
             try {
-                Files.deleteIfExists(Paths.get(folder + coin.folder + coin.currentFilename));
+                Files.deleteIfExists(Paths.get(folder + coin.currentFilename));
             } catch (IOException e) {
                 System.out.println(e.getLocalizedMessage());
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static void saveCoin(CloudCoin coin) {
+        saveCoin(coin, coin.folder);
+    }
+    public static void saveCoin(CloudCoin coin, String folder) {
+        Gson gson = Utils.createGson();
+        try {
+            coin.currentFilename = FileUtils.ensureFilenameUnique(CoinUtils.generateFilename(coin), ".stack", folder);
+            Stack stack = new Stack(coin);
+            Files.write(Paths.get(folder + coin.currentFilename), gson.toJson(stack).getBytes(), StandardOpenOption.CREATE_NEW);
+        } catch (IOException e) {
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+    public static void saveCoins(ArrayList<CloudCoin> coins) {
+        for (CloudCoin coin : coins) {
+            saveCoin(coin);
         }
     }
 
@@ -178,22 +187,6 @@ public class FileSystem {
     }
 
     /**
-     * Writes a CloudCoins a Stack file.
-     *
-     * @param coin     the ArrayList of CloudCoins.
-     * @param filePath the absolute filepath of the CloudCoin file, without the extension.
-     */
-    public static void writeCoinToIndividualStacks(CloudCoin coin, String filePath) {
-        Stack stack = new Stack(coin);
-        try {
-            Files.write(Paths.get(filePath + ".stack"), Utils.createGson().toJson(stack).getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            System.out.println(e.getLocalizedMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Returns the full file path for a JPG image template.
      *
      * @param cloudCoin the CloudCoin that needs a JPG image template.
@@ -206,20 +199,6 @@ public class FileSystem {
             return null;
         else
             return TemplateFolder + "jpeg" + denomination + ".jpg";
-    }
-
-    /**
-     * Converts a byte array to a hexadecimal String.
-     *
-     * @param data the byte array.
-     * @return a hexadecimal String.
-     */
-    public static String bytesToHexString(byte[] data) {
-        final String HexChart = "0123456789ABCDEF";
-        final StringBuilder hex = new StringBuilder(data.length * 2);
-        for (byte b : data)
-            hex.append(HexChart.charAt((b & 0xF0) >> 4)).append(HexChart.charAt((b & 0x0F)));
-        return hex.toString();
     }
 
     /**

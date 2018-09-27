@@ -41,7 +41,7 @@ public class Exporter {
      */
     public void CalculateTotals() {
         // Count all Bank coins
-        ArrayList<CloudCoin> bankCoins = FileSystem.loadFolderCoins(FileSystem.BankFolder);
+        ArrayList<CloudCoin> bankCoins = FileSystem.loadFolderCoinsExport(FileSystem.BankFolder);
         for (CloudCoin coin : bankCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -53,7 +53,7 @@ public class Exporter {
         }
 
         // Count all Fracked coins
-        ArrayList<CloudCoin> frackedCoins = FileSystem.loadFolderCoins(FileSystem.FrackedFolder);
+        ArrayList<CloudCoin> frackedCoins = FileSystem.loadFolderCoinsExport(FileSystem.FrackedFolder);
         for (CloudCoin coin : frackedCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -173,8 +173,8 @@ public class Exporter {
 
         // Get the CloudCoins that will be used for the export.
         int totalSaved = exp_1 + (exp_5 * 5) + (exp_25 * 25) + (exp_100 * 100) + (exp_250 * 250);
-        ArrayList<CloudCoin> totalCoins = FileSystem.loadFolderCoins(FileSystem.BankFolder);
-        totalCoins.addAll(FileSystem.loadFolderCoins(FileSystem.FrackedFolder));
+        ArrayList<CloudCoin> totalCoins = FileSystem.loadFolderCoinsExport(FileSystem.BankFolder);
+        totalCoins.addAll(FileSystem.loadFolderCoinsExport(FileSystem.FrackedFolder));
 
         ArrayList<CloudCoin> onesToExport = new ArrayList<>();
         ArrayList<CloudCoin> fivesToExport = new ArrayList<>();

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 
 public class Utils {
 
+
     /**
      * Creates a Gson object, a JSON parser for converting JSON Strings and objects.
      *

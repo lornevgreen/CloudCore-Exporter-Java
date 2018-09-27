@@ -44,10 +44,12 @@ public class FileSystem {
             Files.createDirectories(Paths.get(RootPath));
 
             Files.createDirectories(Paths.get(ExportFolder));
+
             Files.createDirectories(Paths.get(BankFolder));
             Files.createDirectories(Paths.get(FrackedFolder));
-            Files.createDirectories(Paths.get(TemplateFolder));
+
             Files.createDirectories(Paths.get(LogsFolder));
+            Files.createDirectories(Paths.get(TemplateFolder));
         } catch (Exception e) {
             System.out.println("FS#CD: " + e.getLocalizedMessage());
             e.printStackTrace();
@@ -64,7 +66,7 @@ public class FileSystem {
      * @param folder the folder to search for CloudCoin files.
      * @return an ArrayList of all CloudCoins in the specified folder.
      */
-    public static ArrayList<CloudCoin> loadFolderCoins(String folder) {
+    public static ArrayList<CloudCoin> loadFolderCoinsExport(String folder) {
         ArrayList<CloudCoin> folderCoins = new ArrayList<>();
 
         String[] filenames = FileUtils.selectFileNamesInFolder(folder);

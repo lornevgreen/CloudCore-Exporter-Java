@@ -21,7 +21,7 @@ public class FileSystem {
 
     /* Fields */
 
-    public static String RootPath = "C:" + File.separator + "CloudCoins-Exporter" + File.separator;
+    public static String RootPath = Paths.get("").toAbsolutePath().toString() + File.separator;
 
     public static String ExportFolder = RootPath + Config.TAG_EXPORT + File.separator;
 
@@ -105,6 +105,51 @@ public class FileSystem {
     }
 
     /**
+     * Deletes CloudCoins files from a specific folder.
+     *
+     * @param cloudCoins the ArrayList of CloudCoins to delete.
+     * @param folder     the folder to delete from.
+     */
+    public static void removeCoins(ArrayList<CloudCoin> cloudCoins, String folder) {
+        for (CloudCoin coin : cloudCoins) {
+            try {
+                Files.deleteIfExists(Paths.get(folder + coin.currentFilename));
+            } catch (IOException e) {
+                System.out.println(e.getLocalizedMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void saveCoin(CloudCoin coin, String folder) {
+        Gson gson = Utils.createGson();
+        try {
+            coin.currentFilename = FileUtils.ensureFilenameUnique(CoinUtils.generateFilename(coin), ".stack", folder);
+            Stack stack = new Stack(coin);
+            Files.write(Paths.get(folder + coin.currentFilename), gson.toJson(stack).getBytes(), StandardOpenOption.CREATE_NEW);
+        } catch (IOException e) {
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Writes an array of CloudCoins to a single Stack file.
+     *
+     * @param coins    the ArrayList of CloudCoins.
+     * @param filePath the absolute filepath of the CloudCoin file, without the extension.
+     */
+    public static void saveCoinsSingleStack(ArrayList<CloudCoin> coins, String filePath) {
+        Gson gson = Utils.createGson();
+        try {
+            Stack stack = new Stack(coins.toArray(new CloudCoin[0]));
+            Files.write(Paths.get(filePath), gson.toJson(stack).getBytes(), StandardOpenOption.CREATE_NEW);
+        } catch (IOException e) {
+            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Import a CloudCoin embedded in a jpg header.
      *
      * @param folder the folder containing the jpg file.
@@ -133,60 +178,6 @@ public class FileSystem {
     }
 
     /**
-     * Deletes CloudCoins files from a specific folder.
-     *
-     * @param cloudCoins the ArrayList of CloudCoins to delete.
-     * @param folder     the folder to delete from.
-     */
-    public static void removeCoins(ArrayList<CloudCoin> cloudCoins, String folder) {
-        for (CloudCoin coin : cloudCoins) {
-            try {
-                Files.deleteIfExists(Paths.get(folder + coin.currentFilename));
-            } catch (IOException e) {
-                System.out.println(e.getLocalizedMessage());
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void saveCoin(CloudCoin coin) {
-        saveCoin(coin, coin.folder);
-    }
-    public static void saveCoin(CloudCoin coin, String folder) {
-        Gson gson = Utils.createGson();
-        try {
-            coin.currentFilename = FileUtils.ensureFilenameUnique(CoinUtils.generateFilename(coin), ".stack", folder);
-            Stack stack = new Stack(coin);
-            Files.write(Paths.get(folder + coin.currentFilename), gson.toJson(stack).getBytes(), StandardOpenOption.CREATE_NEW);
-        } catch (IOException e) {
-            System.out.println(e.getLocalizedMessage());
-            e.printStackTrace();
-        }
-    }
-    public static void saveCoins(ArrayList<CloudCoin> coins) {
-        for (CloudCoin coin : coins) {
-            saveCoin(coin);
-        }
-    }
-
-    /**
-     * Writes an array of CloudCoins to a single Stack file.
-     *
-     * @param coins    the ArrayList of CloudCoins.
-     * @param filePath the absolute filepath of the CloudCoin file, without the extension.
-     */
-    public static void writeCoinsToSingleStack(ArrayList<CloudCoin> coins, String filePath) {
-        Gson gson = Utils.createGson();
-        try {
-            Stack stack = new Stack(coins.toArray(new CloudCoin[0]));
-            Files.write(Paths.get(filePath + ".stack"), gson.toJson(stack).getBytes());
-        } catch (IOException e) {
-            System.out.println(e.getLocalizedMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Returns the full file path for a JPG image template.
      *
      * @param cloudCoin the CloudCoin that needs a JPG image template.
@@ -206,12 +197,12 @@ public class FileSystem {
      * <a href="http://www.cloudcoinwiki.com/File_Formats#JPEG_File_Format_for_CloudCoins">JPEG File Format</a>.
      *
      * @param cloudCoin    a CloudCoin object.
-     * @param TemplateFile a template JPG image.
      * @param filePath     the absolute filepath of the new CloudCoin-embedded JPG, without the extension.
      * @return
      */
-    public static boolean writeCoinToJpeg(CloudCoin cloudCoin, String TemplateFile, String filePath) {
+    public static boolean saveCoinJpg(CloudCoin cloudCoin, String filePath) {
         StringBuilder jpgHeader = new StringBuilder();
+        String templateFilepath = FileSystem.getJpgTemplate(cloudCoin);
 
         // APP0 Marker
         jpgHeader.append("01C34A46494600010101006000601D05");
@@ -237,7 +228,7 @@ public class FileSystem {
 
         try {
             // JPEG image data
-            byte[] jpegBytes = Files.readAllBytes(Paths.get(TemplateFile));
+            byte[] jpegBytes = Files.readAllBytes(Paths.get(templateFilepath));
             ByteArrayInputStream inputStream = new ByteArrayInputStream(jpegBytes);
             BufferedImage image = ImageIO.read(inputStream);
 
@@ -263,7 +254,7 @@ public class FileSystem {
             System.arraycopy(ccArray, 0, outputBytes, 4, ccArray.length);
             System.arraycopy(imageBytes, 4, outputBytes, 4 + ccArray.length, imageBytes.length - 4);
 
-            Files.write(Paths.get(filePath + ".jpg"), outputBytes);
+            Files.write(Paths.get(filePath), outputBytes, StandardOpenOption.CREATE_NEW);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -278,7 +269,7 @@ public class FileSystem {
      * @param filePath   the absolute filepath of the new CloudCoin-embedded JPG, without the extension.
      * @return true if the file was saved to the location provided, otherwise false.
      */
-    public static boolean writeCoinsToCsv(ArrayList<CloudCoin> cloudCoins, String filePath) {
+    public static boolean saveCoinsCsv(ArrayList<CloudCoin> cloudCoins, String filePath) {
         StringBuilder csv = new StringBuilder();
 
         // Header
@@ -306,7 +297,7 @@ public class FileSystem {
 
         // Write the file
         try {
-            Files.write(Paths.get(filePath + ".csv"), csv.toString().getBytes(StandardCharsets.UTF_8));
+            Files.write(Paths.get(filePath), csv.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW);
             return true;
         } catch (IOException e) {
             e.printStackTrace();

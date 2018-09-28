@@ -68,15 +68,6 @@ public class SimpleLogger {
     }
 
     /**
-     * Log an info message.
-     *
-     * @param text the text to append to the log.
-     */
-    public void Info(String text) {
-        writeFormattedLog(INFO, text);
-    }
-
-    /**
      * Writes all log messages to a file.
      */
     public void writeLogToFile() {

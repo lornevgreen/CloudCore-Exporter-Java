@@ -52,7 +52,6 @@ public class FileUtils {
             String file = new String(Files.readAllBytes(Paths.get(folder + filename)));
             Stack stack = Utils.createGson().fromJson(file, Stack.class);
             for (CloudCoin coin : stack.cc) {
-                coin.folder = folder;
                 coin.currentFilename = filename;
             }
             return new ArrayList<>(Arrays.asList(stack.cc));

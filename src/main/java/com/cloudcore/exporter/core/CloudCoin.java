@@ -33,8 +33,6 @@ public class CloudCoin {
 
     /* Fields */
 
-    public transient String folder;
-
     public transient String currentFilename;
 
 
@@ -47,7 +45,6 @@ public class CloudCoin {
      * @param filename the absolute filepath of the Stack file.
      */
     public CloudCoin(String folder, String filename) {
-        this.folder = folder;
         this.currentFilename = filename;
     }
 

@@ -1,47 +1,54 @@
 package com.cloudcore.exporter;
 
 import com.cloudcore.exporter.core.FileSystem;
+import com.cloudcore.exporter.desktop.FolderWatcher;
+import com.cloudcore.exporter.server.Command;
 import com.cloudcore.exporter.utils.SimpleLogger;
 
+import java.nio.file.Files;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
 
-
-    /* Fields */
-
-    public static SimpleLogger logger;
-
-
-    /* Methods */
-
-    /**
-     * Creates an Exporter instance and runs it.
-     */
     public static void main(String[] args) {
-        try {
-            setup();
-            Exporter exporter = new Exporter();
-            exporter.logger = logger;
+        SimpleLogger.writeLog("ServantStarted", "");
+        ArrayList<Command> commands;
 
-            exporter.ExportCoins();
-        } catch (Exception e) {
-            System.out.println("Uncaught exception - " + e.getLocalizedMessage());
-            logger.appendLog(e.toString(), e.getStackTrace());
-            e.printStackTrace();
+        while (true) {
+            try {
+                FileSystem.createDirectories();
+
+                FolderWatcher watcher = new FolderWatcher(FileSystem.CommandsFolder);
+                System.out.println("Watching for commands at " + FileSystem.CommandsFolder);
+                boolean stop = false;
+
+                commands = FileSystem.getCommands();
+                if (commands.size() > 0)
+                    for (Command command : commands) {
+                        boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal(command.account, command.amount),
+                                command.type, command.account, command.tag);
+                        FileSystem.archiveCommand(command);
+                    }
+
+                while (!stop) {
+                    if (watcher.newFileDetected()) {
+                        System.out.println(Instant.now().toString() + ": Exporting coins...");
+                        commands = FileSystem.getCommands();
+                        if (commands.size() > 0)
+                            for (Command command : commands) {
+                                boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal(command.account, command.amount),
+                                        command.type, command.account, command.tag);
+                                FileSystem.archiveCommand(command);
+                            }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Uncaught exception - " + e.getLocalizedMessage());
+            }
         }
-
-        logger.writeLogToFile();
-    }
-
-    /**
-     * Sets up the FileSystem instance in the defined rootFolder.
-     */
-    private static void setup() {
-        FileSystem.createDirectories();
-
-        logger = new SimpleLogger(FileSystem.LogsFolder + "logs" +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")).toLowerCase() + ".log");
     }
 }

@@ -5,7 +5,9 @@ import com.cloudcore.exporter.utils.CoinUtils;
 import com.cloudcore.exporter.utils.FileUtils;
 import com.cloudcore.exporter.utils.SimpleLogger;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Exporter {
@@ -39,9 +41,9 @@ public class Exporter {
     /**
      * Loads all CloudCoins from the Bank and Fracked folders, and saves the total number of files and denominations.
      */
-    public void CalculateTotals() {
+    public static void CalculateTotals(String accountFolder) {
         // Count all Bank coins
-        ArrayList<CloudCoin> bankCoins = FileSystem.loadFolderCoinsExport(FileSystem.BankFolder);
+        ArrayList<CloudCoin> bankCoins = FileSystem.loadFolderCoinsExport(accountFolder + FileSystem.BankPath);
         for (CloudCoin coin : bankCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -53,7 +55,7 @@ public class Exporter {
         }
 
         // Count all Fracked coins
-        ArrayList<CloudCoin> frackedCoins = FileSystem.loadFolderCoinsExport(FileSystem.FrackedFolder);
+        ArrayList<CloudCoin> frackedCoins = FileSystem.loadFolderCoinsExport(accountFolder + FileSystem.FrackedPath);
         for (CloudCoin coin : frackedCoins) {
             int denomination = CoinUtils.getDenomination(coin);
 
@@ -73,11 +75,38 @@ public class Exporter {
         twoFiftiesTotalCount = twoFiftiesCount + twoFiftiesFrackedCount;
     }
 
-    /**
-     * Asks the user for instructions on how to export CloudCoins to new files.
-     */
-    public void ExportCoins() {
-        CalculateTotals();
+    public static int[] calculateNotesForTotal(String accountFolder, int amount) {
+        int[] coinTotals = FileSystem.getTotalCoinsBank(FileSystem.AccountFolder + accountFolder);
+        int[] notesToExport = new int[coinTotals.length];
+
+        if (amount >= 250 && coinTotals[4] > 0) {
+            notesToExport[4] = ((amount / 250) < (coinTotals[4])) ? (amount / 250) : (coinTotals[4]);
+            amount -= (notesToExport[4] * 250);
+        }
+        if (amount >= 100 && coinTotals[3] > 0) {
+            notesToExport[3] = ((amount / 100) < (coinTotals[3])) ? (amount / 100) : (coinTotals[3]);
+            amount -= (notesToExport[3] * 100);
+        }
+        if (amount >= 25 && coinTotals[2] > 0) {
+            notesToExport[2] = ((amount / 25) < (coinTotals[2])) ? (amount / 25) : (coinTotals[2]);
+            amount -= (notesToExport[2] * 25);
+        }
+        if (amount >= 5 && coinTotals[1] > 0) {
+            notesToExport[1] = ((amount / 5) < (coinTotals[1])) ? (amount / 5) : (coinTotals[1]);
+            amount -= (notesToExport[1] * 5);
+        }
+        if (amount >= 1 && coinTotals[0] > 0) {
+            notesToExport[0] = (amount < (coinTotals[0])) ? amount : (coinTotals[0]);
+            amount -= (notesToExport[0]);
+        }
+
+        if (amount != 0)
+            return new int[0];
+        else
+            return notesToExport;
+    }
+
+    private static void askUserForExportParameters() {
         Scanner reader = new Scanner(System.in);
         int stackType = 1;
 
@@ -103,7 +132,6 @@ public class Exporter {
 
         // Ask for amounts to export.
         int exp_1 = 0, exp_5 = 0, exp_25 = 0, exp_100 = 0, exp_250 = 0;
-        boolean fail;
         if (onesTotalCount > 0) {
             System.out.println("How many 1s do you want to export? Available: " + onesTotalCount);
             exp_1 = reader.hasNextInt() ? reader.nextInt() : -1;
@@ -170,11 +198,27 @@ public class Exporter {
             }
         }
         updateLogNoPrint("User input: Tag: " + tag);
+    }
+
+    /**
+     * Asks the user for instructions on how to export CloudCoins to new files.
+     */
+    public static boolean ExportCoins(int[] exp, int fileType, String accountId, String tag) {
+        System.out.println("exporting...");
+        String accountFolder = FileSystem.AccountFolder + accountId + File.separator;
+
+        if (exp.length == 0 || fileType < 0 || fileType > 3) {
+            updateLog("export commands are wrong " + exp.length + ", " + fileType);
+            return false;
+        }
+
+        if (tag == null)
+            tag = "";
 
         // Get the CloudCoins that will be used for the export.
-        int totalSaved = exp_1 + (exp_5 * 5) + (exp_25 * 25) + (exp_100 * 100) + (exp_250 * 250);
-        ArrayList<CloudCoin> totalCoins = FileSystem.loadFolderCoinsExport(FileSystem.BankFolder);
-        totalCoins.addAll(FileSystem.loadFolderCoinsExport(FileSystem.FrackedFolder));
+        int totalSaved = exp[0] + (exp[1] * 5) + (exp[2] * 25) + (exp[3] * 100) + (exp[4] * 250);
+        ArrayList<CloudCoin> totalCoins = FileSystem.loadFolderCoinsExport(accountFolder + FileSystem.BankPath);
+        totalCoins.addAll(FileSystem.loadFolderCoinsExport(accountFolder + FileSystem.FrackedPath));
 
         ArrayList<CloudCoin> onesToExport = new ArrayList<>();
         ArrayList<CloudCoin> fivesToExport = new ArrayList<>();
@@ -182,31 +226,34 @@ public class Exporter {
         ArrayList<CloudCoin> hundredsToExport = new ArrayList<>();
         ArrayList<CloudCoin> twoFiftiesToExport = new ArrayList<>();
 
-        for (int i = 0, totalCoinsSize = totalCoins.size(); i < totalCoinsSize; i++) {
+        System.out.println(totalCoins.size() + " coins");
+
+        for (int i = 0, j = totalCoins.size(); i < j; i++) {
             CloudCoin coin = totalCoins.get(i);
             int denomination = CoinUtils.getDenomination(coin);
             if (denomination == 1) {
-                if (exp_1-- > 0) onesToExport.add(coin);
-                else exp_1 = 0;
+                if (exp[0]-- > 0) onesToExport.add(coin);
+                else exp[0] = 0;
             } else if (denomination == 5) {
-                if (exp_5-- > 0) fivesToExport.add(coin);
-                else exp_5 = 0;
+                if (exp[1]-- > 0) {
+                    fivesToExport.add(coin);
+                } else exp[1] = 0;
             } else if (denomination == 25) {
-                if (exp_25-- > 0) qtrToExport.add(coin);
-                else exp_25 = 0;
+                if (exp[2]-- > 0) qtrToExport.add(coin);
+                else exp[2] = 0;
             } else if (denomination == 100) {
-                if (exp_100-- > 0) hundredsToExport.add(coin);
-                else exp_100 = 0;
+                if (exp[3]-- > 0) hundredsToExport.add(coin);
+                else exp[3] = 0;
             } else if (denomination == 250) {
-                if (exp_250-- > 0) twoFiftiesToExport.add(coin);
-                else exp_250 = 0;
+                if (exp[4]-- > 0) twoFiftiesToExport.add(coin);
+                else exp[4] = 0;
             }
         }
 
-        if (onesToExport.size() < exp_1 || fivesToExport.size() < exp_5 || qtrToExport.size() < exp_25
-                || hundredsToExport.size() < exp_100 || twoFiftiesToExport.size() < exp_250) {
+        if (onesToExport.size() < exp[0] || fivesToExport.size() < exp[1] || qtrToExport.size() < exp[2]
+                || hundredsToExport.size() < exp[3] || twoFiftiesToExport.size() < exp[4]) {
             updateLog("Not enough CloudCoins for export. No CloudCoins were exported. Exiting...");
-            return;
+            return false;
         }
 
         ArrayList<CloudCoin> exportCoins = new ArrayList<>();
@@ -217,28 +264,30 @@ public class Exporter {
         exportCoins.addAll(twoFiftiesToExport);
 
         String filename;
+        String exportFolder = accountFolder + FileSystem.ExportPath;
 
-        // Export Coins as one Stack or individual Stacks
-        if (1 == fileType) {
-            if (1 == stackType) {
-                filename = totalSaved + ".CloudCoins" + tag;
-                filename = FileUtils.ensureFilenameUnique(filename, ".stack", FileSystem.ExportFolder);
-                FileSystem.saveCoinsSingleStack(exportCoins, FileSystem.ExportFolder + filename);
-                updateLog("CloudCoins exported as single Stack to " + filename);
-            } else {
-                for (CloudCoin coin : exportCoins) {
-                    FileSystem.saveCoin(coin, FileSystem.ExportFolder);
-                    updateLog("CloudCoins exported as Stacks to " + coin.currentFilename);
-                }
+        // Export Coins as multiple notes
+        if (0 == fileType) {
+            for (CloudCoin coin : exportCoins) {
+                FileSystem.saveCoin(coin, exportFolder);
+                updateLog("CloudCoins exported as Stacks to " + coin.currentFilename);
             }
+        }
+
+        // Export Coins as one Stack
+        if (1 == fileType) {
+            filename = totalSaved + ".CloudCoins" + tag;
+            filename = FileUtils.ensureFilenameUnique(filename, ".stack", exportFolder);
+            FileSystem.saveCoinsSingleStack(exportCoins, exportFolder + filename);
+            updateLog("CloudCoins exported as single Stack to " + filename);
         }
 
         // Export Coins as jpg Images
         else if (2 == fileType) {
             for (CloudCoin coin : exportCoins) {
                 filename = CoinUtils.generateFilename(coin) + tag;
-                filename = FileUtils.ensureFilenameUnique(filename, ".jpg", FileSystem.ExportFolder);
-                boolean fileGenerated = FileSystem.saveCoinJpg(coin, FileSystem.ExportFolder + filename);
+                filename = FileUtils.ensureFilenameUnique(filename, ".jpg", exportFolder);
+                boolean fileGenerated = FileSystem.saveCoinJpg(coin, exportFolder + filename);
                 if (fileGenerated)
                     updateLog("CloudCoin exported as JPG to " + filename);
             }
@@ -247,28 +296,31 @@ public class Exporter {
         // Export Coins as CSV
         else if (3 == fileType) {
             filename = totalSaved + ".CloudCoins" + tag;
-            filename = FileUtils.ensureFilenameUnique(filename, ".csv", FileSystem.ExportFolder);
-            boolean fileGenerated = FileSystem.saveCoinsCsv(exportCoins, FileSystem.ExportFolder + filename);
+            filename = FileUtils.ensureFilenameUnique(filename, ".csv", exportFolder);
+            boolean fileGenerated = FileSystem.saveCoinsCsv(exportCoins, exportFolder + filename);
             if (fileGenerated)
                 updateLog("CloudCoin exported as CSV to " + filename);
         }
 
-        saveRemainingCoins(totalCoins, exportCoins);
+        //saveRemainingCoins(totalCoins, exportCoins);
 
         // Remove exported coins
-        FileSystem.removeCoins(exportCoins, FileSystem.BankFolder);
-        FileSystem.removeCoins(exportCoins, FileSystem.FrackedFolder);
+        FileSystem.removeCoins(exportCoins, accountFolder + FileSystem.BankPath);
+        FileSystem.removeCoins(exportCoins, accountFolder + FileSystem.FrackedPath);
+
+        return true;
     }
 
-    private void saveRemainingCoins(ArrayList<CloudCoin> totalCoins, ArrayList<CloudCoin> exportCoins) {
+    private static void saveRemainingCoins(ArrayList<CloudCoin> totalCoins, ArrayList<CloudCoin> exportCoins,
+                                           String accountFolder) {
         totalCoins.removeAll(exportCoins);
 
         if (totalCoins.size() == 0)
             return;
 
         String filename = totalCoins.size() + ".CloudCoins";
-        filename = FileUtils.ensureFilenameUnique(filename, ".stack", FileSystem.ExportFolder);
-        FileSystem.saveCoinsSingleStack(exportCoins, FileSystem.ExportFolder + filename);
+        filename = FileUtils.ensureFilenameUnique(filename, ".stack", accountFolder + FileSystem.ExportPath);
+        FileSystem.saveCoinsSingleStack(exportCoins, accountFolder + FileSystem.ExportPath + filename);
         updateLog("CloudCoins exported as single Stack to " + filename);
     }
 
@@ -277,9 +329,10 @@ public class Exporter {
      *
      * @param message a log message.
      */
-    private void updateLog(String message) {
-        System.out.println(message);
-        logger.appendLog(message);
+    private static void updateLog(String message) {
+        if (Config.DEBUG_MODE)
+            System.out.println(message);
+        SimpleLogger.writeLog(message, "");
     }
 
     /**
@@ -287,7 +340,7 @@ public class Exporter {
      *
      * @param message a log message.
      */
-    private void updateLogNoPrint(String message) {
-        logger.appendLog(message);
+    private static void updateLogNoPrint(String message) {
+        SimpleLogger.writeLog(message, "");
     }
 }

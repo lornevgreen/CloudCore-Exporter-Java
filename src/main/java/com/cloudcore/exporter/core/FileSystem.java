@@ -1,5 +1,6 @@
 package com.cloudcore.exporter.core;
 
+import com.cloudcore.exporter.server.Command;
 import com.cloudcore.exporter.utils.CoinUtils;
 import com.cloudcore.exporter.utils.FileUtils;
 import com.cloudcore.exporter.utils.Utils;
@@ -11,24 +12,31 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FileSystem {
 
 
     /* Fields */
 
-    public static String RootPath = Paths.get("").toAbsolutePath().toString() + File.separator;
+    public static String RootPath = "C:" + File.separator + "CloudCoinServer" + File.separator;
+    //public static String RootPath = "C:\\MyFiles\\work\\CloudCoin\\Dev\\Core-Exporter\\"; // TODO: NEVER UPLOAD THIS TO GITHUB!
+    //public static String RootPath = Paths.get("").toAbsolutePath().toString() + File.separator;
 
-    public static String ExportFolder = RootPath + Config.TAG_EXPORT + File.separator;
+    public static String BankPath = File.separator + Config.TAG_BANK + File.separator;
+    public static String FrackedPath = File.separator + Config.TAG_FRACKED + File.separator;
 
-    public static String BankFolder = RootPath + Config.TAG_BANK + File.separator;
-    public static String FrackedFolder = RootPath + Config.TAG_FRACKED + File.separator;
+    public static String ExportPath = File.separator + Config.TAG_EXPORT + File.separator;
 
-    public static String LogsFolder = RootPath + Config.TAG_LOGS + File.separator;
+    public static String LogsPath = File.separator + Config.TAG_LOGS + File.separator + Config.MODULE_NAME + File.separator;
+
+
+    public static String AccountFolder = RootPath + "accounts" + File.separator;
+    public static String PasswordFolder = AccountFolder + "Passwords" + File.separator;
+    public static String CommandsFolder = RootPath + Config.TAG_COMMAND + File.separator;
+    public static String LogsFolder = RootPath + LogsPath;
     public static String TemplateFolder = RootPath + Config.TAG_TEMPLATES + File.separator;
 
 
@@ -43,11 +51,9 @@ public class FileSystem {
         try {
             Files.createDirectories(Paths.get(RootPath));
 
-            Files.createDirectories(Paths.get(ExportFolder));
-
-            Files.createDirectories(Paths.get(BankFolder));
-            Files.createDirectories(Paths.get(FrackedFolder));
-
+            Files.createDirectories(Paths.get(AccountFolder));
+            Files.createDirectories(Paths.get(PasswordFolder));
+            Files.createDirectories(Paths.get(CommandsFolder));
             Files.createDirectories(Paths.get(LogsFolder));
             Files.createDirectories(Paths.get(TemplateFolder));
         } catch (Exception e) {
@@ -59,6 +65,22 @@ public class FileSystem {
         return true;
     }
 
+    public static String getAccountFolder(String account) {
+        if (account == null || account.length() == 0)
+            return null;
+
+        try {
+            String key = new String(Files.readAllBytes(Paths.get(PasswordFolder + account + ".txt")), StandardCharsets.UTF_8);
+            if (0 == key.length()) {
+                return null;
+            }
+            return key;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     /**
      * Load all CloudCoins in a specific folder.
@@ -68,6 +90,7 @@ public class FileSystem {
      */
     public static ArrayList<CloudCoin> loadFolderCoinsExport(String folder) {
         ArrayList<CloudCoin> folderCoins = new ArrayList<>();
+        System.out.println("getting coins in " + folder);
 
         String[] filenames = FileUtils.selectFileNamesInFolder(folder);
         for (String filename : filenames) {
@@ -104,6 +127,53 @@ public class FileSystem {
         }
 
         return folderCoins;
+    }
+
+    public static ArrayList<Command> getCommands() {
+        String[] commandFiles = FileUtils.selectFileNamesInFolder(CommandsFolder);
+        ArrayList<Command> commands = new ArrayList<>();
+
+        for (int i = 0, j = commandFiles.length; i < j; i++) {
+            if (!commandFiles[i].contains(Config.MODULE_NAME))
+                continue;
+
+            try {
+                String json = new String(Files.readAllBytes(Paths.get(CommandsFolder + commandFiles[i])));
+                Command command = Utils.createGson().fromJson(json, Command.class);
+                command.filename = commandFiles[i];
+                commands.add(command);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return commands;
+    }
+
+    public static void archiveCommand(Command command) {
+        try {
+            Files.move(Paths.get(CommandsFolder + command.filename),
+                    Paths.get(LogsFolder + command.filename),
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int[] getTotalCoinsBank(String accountFolder) {
+        int[] totals = new int[6];
+
+        int[] bankTotals = FileUtils.countCoins(accountFolder + FileSystem.BankPath);
+        System.out.println(Arrays.toString(bankTotals) + " Coins in " +
+                accountFolder + FileSystem.BankPath);
+
+        totals[5] = bankTotals[0];
+        totals[0] = bankTotals[1];
+        totals[1] = bankTotals[2];
+        totals[2] = bankTotals[3];
+        totals[3] = bankTotals[4];
+        totals[4] = bankTotals[5];
+
+        return totals;
     }
 
     /**

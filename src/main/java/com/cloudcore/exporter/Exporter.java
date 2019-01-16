@@ -76,7 +76,7 @@ public class Exporter {
     }
 
     public static int[] calculateNotesForTotal(String accountFolder, int amount) {
-        int[] coinTotals = FileSystem.getTotalCoinsBank(FileSystem.AccountFolder + accountFolder);
+        int[] coinTotals = FileSystem.getTotalCoinsBank(FileSystem.RootPath + FileSystem.BankPath);
         int[] notesToExport = new int[coinTotals.length];
 
         if (amount >= 250 && coinTotals[4] > 0) {
@@ -205,7 +205,7 @@ public class Exporter {
      */
     public static boolean ExportCoins(int[] exp, int fileType, String accountId, String tag) {
         System.out.println("exporting...");
-        String accountFolder = FileSystem.AccountFolder + accountId + File.separator;
+        String accountFolder = FileSystem.RootPath;
 
         if (exp.length == 0 || fileType < 0 || fileType > 3) {
             updateLog("export commands are wrong " + exp.length + ", " + fileType);
@@ -214,6 +214,8 @@ public class Exporter {
 
         if (tag == null)
             tag = "";
+        else if ('.' != tag.charAt(0))
+            tag = "." + tag;
 
         // Get the CloudCoins that will be used for the export.
         int totalSaved = exp[0] + (exp[1] * 5) + (exp[2] * 25) + (exp[3] * 100) + (exp[4] * 250);

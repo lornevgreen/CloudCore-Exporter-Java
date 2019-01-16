@@ -21,7 +21,7 @@ public class FileSystem {
 
     /* Fields */
 
-    public static String RootPath = "C:" + File.separator + "CloudCoinServer" + File.separator;
+    public static String RootPath = "C:\\Users\\Public\\Documents\\CloudCoin\\";
     //public static String RootPath = "C:\\MyFiles\\work\\CloudCoin\\Dev\\Core-Exporter\\"; // TODO: NEVER UPLOAD THIS TO GITHUB!
     //public static String RootPath = Paths.get("").toAbsolutePath().toString() + File.separator;
 
@@ -33,8 +33,6 @@ public class FileSystem {
     public static String LogsPath = File.separator + Config.TAG_LOGS + File.separator + Config.MODULE_NAME + File.separator;
 
 
-    public static String AccountFolder = RootPath + "accounts" + File.separator;
-    public static String PasswordFolder = AccountFolder + "Passwords" + File.separator;
     public static String CommandsFolder = RootPath + Config.TAG_COMMAND + File.separator;
     public static String LogsFolder = RootPath + LogsPath;
     public static String TemplateFolder = RootPath + Config.TAG_TEMPLATES + File.separator;
@@ -51,8 +49,6 @@ public class FileSystem {
         try {
             Files.createDirectories(Paths.get(RootPath));
 
-            Files.createDirectories(Paths.get(AccountFolder));
-            Files.createDirectories(Paths.get(PasswordFolder));
             Files.createDirectories(Paths.get(CommandsFolder));
             Files.createDirectories(Paths.get(LogsFolder));
             Files.createDirectories(Paths.get(TemplateFolder));
@@ -65,22 +61,22 @@ public class FileSystem {
         return true;
     }
 
-    public static String getAccountFolder(String account) {
-        if (account == null || account.length() == 0)
-            return null;
+    public static void changeRootPath(String rootPath) {
+        RootPath = rootPath;
 
-        try {
-            String key = new String(Files.readAllBytes(Paths.get(PasswordFolder + account + ".txt")), StandardCharsets.UTF_8);
-            if (0 == key.length()) {
-                return null;
-            }
-            return key;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        BankPath = File.separator + Config.TAG_BANK + File.separator;
+        FrackedPath = File.separator + Config.TAG_FRACKED + File.separator;
+
+        ExportPath = File.separator + Config.TAG_EXPORT + File.separator;
+
+        LogsPath = File.separator + Config.TAG_LOGS + File.separator + Config.MODULE_NAME + File.separator;
+
+        CommandsFolder = RootPath + Config.TAG_COMMAND + File.separator;
+        LogsFolder = RootPath + LogsPath;
+        TemplateFolder = RootPath + Config.TAG_TEMPLATES + File.separator;
+
+        LogsFolder = RootPath + Config.TAG_LOGS + File.separator + Config.MODULE_NAME + File.separator;
     }
-
 
     /**
      * Load all CloudCoins in a specific folder.
@@ -162,9 +158,8 @@ public class FileSystem {
     public static int[] getTotalCoinsBank(String accountFolder) {
         int[] totals = new int[6];
 
-        int[] bankTotals = FileUtils.countCoins(accountFolder + FileSystem.BankPath);
-        System.out.println(Arrays.toString(bankTotals) + " Coins in " +
-                accountFolder + FileSystem.BankPath);
+        int[] bankTotals = FileUtils.countCoins(accountFolder);
+        System.out.println(Arrays.toString(bankTotals) + " Coins in " + accountFolder);
 
         totals[5] = bankTotals[0];
         totals[0] = bankTotals[1];

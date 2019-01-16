@@ -6,6 +6,7 @@ import com.cloudcore.exporter.server.Command;
 import com.cloudcore.exporter.utils.SimpleLogger;
 
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,11 +16,15 @@ import java.util.Arrays;
 public class Main {
 
     public static void main(String[] args) {
-        SimpleLogger.writeLog("ServantStarted", "");
+        SimpleLogger.writeLog("ServantExporterStarted", "");
         ArrayList<Command> commands;
 
         while (true) {
             try {
+                if (args.length != 0 && Files.exists(Paths.get(args[0]))) {
+                    System.out.println("New root path: " + args[0]);
+                    FileSystem.changeRootPath(args[0]);
+                }
                 FileSystem.createDirectories();
 
                 FolderWatcher watcher = new FolderWatcher(FileSystem.CommandsFolder);
@@ -29,8 +34,8 @@ public class Main {
                 commands = FileSystem.getCommands();
                 if (commands.size() > 0)
                     for (Command command : commands) {
-                        boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal(command.account, command.amount),
-                                command.type, command.account, command.tag);
+                        boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal("", command.amount),
+                                command.type, "", command.tag);
                         FileSystem.archiveCommand(command);
                     }
 
@@ -40,8 +45,8 @@ public class Main {
                         commands = FileSystem.getCommands();
                         if (commands.size() > 0)
                             for (Command command : commands) {
-                                boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal(command.account, command.amount),
-                                        command.type, command.account, command.tag);
+                                boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal("", command.amount),
+                                        command.type, "", command.tag);
                                 FileSystem.archiveCommand(command);
                             }
                     }

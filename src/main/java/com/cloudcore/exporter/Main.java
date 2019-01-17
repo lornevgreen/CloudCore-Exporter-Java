@@ -14,6 +14,7 @@ public class Main {
 
     public static void main(String[] args) {
         SimpleLogger.writeLog("ServantExporterStarted", "");
+        singleRun = isSingleRun(args);
         ArrayList<Command> commands;
         if (args.length != 0 && Files.exists(Paths.get(args[0]))) {
             System.out.println("New root path: " + args[0]);
@@ -28,6 +29,7 @@ public class Main {
                 boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal("", command.amount),
                         command.type, "", command.tag);
                 FileSystem.archiveCommand(command);
+                exitIfSingleRun();
             }
 
         FolderWatcher watcher = new FolderWatcher(FileSystem.CommandsFolder);
@@ -44,11 +46,24 @@ public class Main {
                             boolean successful = Exporter.ExportCoins(Exporter.calculateNotesForTotal("", command.amount),
                                     command.type, "", command.tag);
                             FileSystem.archiveCommand(command);
+                            exitIfSingleRun();
                         }
                 }
             } catch (Exception e) {
                 System.out.println("Uncaught exception - " + e.getLocalizedMessage());
             }
         }
+    }
+
+    public static boolean singleRun = false;
+    public static boolean isSingleRun(String[] args) {
+        for (String arg : args)
+            if (arg.equals("singleRun"))
+                return true;
+        return false;
+    }
+    public static void exitIfSingleRun() {
+        if (singleRun)
+            System.exit(0);
     }
 }

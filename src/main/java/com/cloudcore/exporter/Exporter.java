@@ -212,7 +212,7 @@ public class Exporter {
             return false;
         }
 
-        if (tag == null)
+        if (tag == null || tag.length() == 0)
             tag = "";
         else if ('.' != tag.charAt(0))
             tag = "." + tag;

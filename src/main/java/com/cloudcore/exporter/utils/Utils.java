@@ -15,6 +15,7 @@ public class Utils {
         return new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .setPrettyPrinting()
+                .setLenient()
                 .create();
     }
 
